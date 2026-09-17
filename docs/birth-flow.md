@@ -80,6 +80,31 @@ Until the backend exists, `LocalBirthServer` in `src/api/birthApi.ts` plays the
 server: it reads `Date.now()` *inside* `confirmBirth()` and issues sequential
 certificate numbers. Set `VITE_BIRTH_API_URL` to switch to `HttpBirthServer`.
 
+## One canonical Birth object
+
+`src/birth/birthRecord.ts` defines `BirthRecord`: id, certificate number,
+name at birth, portrait ref, the UTC instant, time zone, coordinates, place,
+and `natal` (Sun, Moon, Ascendant, Midheaven, Descendant, IC, all planets,
+houses, aspects). It is created once by `createBirthRecord()` from the
+server's confirmation, deep-frozen, and stored on the Furby as `furby.birth`.
+Every screen reads from it through the selectors (`bigThree`, `placement`,
+`bornAt`, `placeLine`); no component carries its own copy of a sign or degree.
+The store migrates first-release records (version 1 → 2) by rebuilding the
+natal data from the immutable timestamp and coordinates.
+
+## Screens after Birth
+
+| Route | Screen | What the eye lands on |
+| --- | --- | --- |
+| `#/furby/:id/reveal` | Reveal | The Furby and its new identity: name, sun sign, compact Sun · Moon · Rising. |
+| `#/furby/:id/certificate` | Birth Certificate | The permanent record as a collectible: portrait, name, number, date, exact time, place, Big Three, seal. No wheel. |
+| `#/furby/:id/chart` | Natal Chart | The sky at the exact moment: the full-width wheel with the Furby readable in the centre, then Placements / Houses / Aspects. |
+| `#/furby/:id` | Profile | Portrait, name, Big Three, temperament, links. |
+
+The Birth ritual itself is fullscreen: the moment is sealed, the zodiac ring
+draws, houses appear, the Ascendant and Midheaven sweep in, planets settle,
+aspects join, stars pulse, "The sky remembers", then "NAME has been born".
+
 ## Backend contract
 
 `POST {VITE_BIRTH_API_URL}/api/furbys/birth`

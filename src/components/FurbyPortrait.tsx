@@ -1,15 +1,15 @@
 import type { CSSProperties } from 'react'
 import { usePortraitUrl } from '../portrait/usePortraitUrl'
 import type { PortraitSize } from '../portrait/types'
-import type { Furby } from '../store/furbyStore'
+import type { PortraitRef } from '../portrait/types'
 import { FurbySprite, type EyeState } from './FurbySprite'
 import './FurbyPortrait.css'
 
 export type PortraitVariant = 'profile' | 'birth' | 'certificate' | 'celestial' | 'thumbnail'
 
 interface Props {
-  /** Uses the Furby's Birth Portrait. */
-  furby?: Pick<Furby, 'name' | 'birthPortraitId'>
+  /** Uses the Furby's Birth Portrait from its canonical Birth record. */
+  furby?: { name: string; birth: { portrait?: PortraitRef } }
   /** Or any stored portrait id. */
   portraitId?: string
   /** Or a ready URL (review screens, before anything is saved). */
@@ -63,7 +63,7 @@ export function FurbyPortrait({
   className = '',
   style,
 }: Props) {
-  const id = portraitId ?? furby?.birthPortraitId
+  const id = portraitId ?? furby?.birth.portrait?.id
   const wanted = sizeFor(variant, size)
   const loaded = usePortraitUrl(src ? undefined : id, wanted)
   const url = src ?? loaded.url

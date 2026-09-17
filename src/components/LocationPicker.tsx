@@ -62,7 +62,7 @@ export function LocationPicker({ value, onChange, onClose }: Props) {
   return (
     <Sheet title="Birth location" onClose={onClose}>
       <div className="stack">
-        <EmbossButton variant="chrome" small onClick={useDevice} disabled={geoState === 'busy'}>
+        <EmbossButton variant="secondary" small onClick={useDevice} disabled={geoState === 'busy'}>
           {geoState === 'busy' ? 'Finding you…' : '⌖ Use where I am'}
         </EmbossButton>
         {geoState === 'error' && <p className="subcopy" style={{ color: 'var(--orange)' }}>Could not read the device location. Pick a place below instead.</p>}
@@ -118,7 +118,7 @@ export function LocationPicker({ value, onChange, onClose }: Props) {
               <input className="input input--small" inputMode="decimal" placeholder="Longitude" value={lon} onChange={(e) => setLon(e.target.value)} aria-label="Longitude" />
             </div>
             <p className="subcopy">South and west are negative. Time zone will be this device's ({deviceTimeZone()}).</p>
-            <EmbossButton variant="chrome" small onClick={applyManual}>Use these coordinates</EmbossButton>
+            <EmbossButton variant="secondary" small onClick={applyManual}>Use these coordinates</EmbossButton>
             <button type="button" className="btn btn--text" onClick={() => setManual(false)}>Back to the list</button>
           </>
         )}

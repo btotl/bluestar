@@ -1,183 +1,85 @@
-import { useState } from 'react'
-import { Navigate, useParams, useSearchParams } from 'react-router-dom'
-import { formatCoordinates, formatDegree, formatPlacement, ordinalHouse } from '../astro/format'
-import { BIG_THREE_TAGLINES, interpret } from '../astro/interpretations'
-import { SIGN_BY_KEY, SIGNS } from '../astro/signs'
-import type { PointKey } from '../astro/types'
+import { Navigate, useParams } from 'react-router-dom'
+import { formatCoordinates } from '../astro/format'
+import { Glyph } from '../astro/glyphs'
+import { SIGN_BY_KEY } from '../astro/signs'
+import { placeLine } from '../birth/birthRecord'
+import { BigThree } from '../components/BigThree'
 import { FurbyPortrait } from '../components/FurbyPortrait'
-import { NatalWheel } from '../components/NatalWheel'
-import { PlanetSheet } from '../components/PlanetSheet'
-import { EmbossButton, Medallion, RetroPanel } from '../components/primitives'
+import { EmbossButton, Padlock } from '../components/primitives'
 import { Starfield } from '../components/Starfield'
-import { formatShortDate, formatTime, formatUtcOffset, tzAbbreviation } from '../lib/time'
+import { formatLongDate, formatTime, formatUtcOffset } from '../lib/time'
 import { formatCertificateNumber, useFurby } from '../store/furbyStore'
 import './CertificatePage.css'
 
-const STORY_ORDER: PointKey[] = ['venus', 'mars', 'mercury', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto', 'northNode', 'midheaven']
-
+/** The permanent record, as a collectible. No chart here; that has its own screen. */
 export function CertificatePage() {
   const { id } = useParams()
   const furby = useFurby(id)
-  const [params] = useSearchParams()
-  const [selected, setSelected] = useState<PointKey | null>(null)
   if (!furby) return <Navigate to="/" replace />
-
-  const justBorn = params.get('born') === '1'
-  const { chart, birth } = furby
-  const tz = birth.location.timeZone
-  const bornAt = new Date(birth.timestampUtc)
-  const sun = SIGN_BY_KEY[chart.bigThree.sun]
-  const moon = SIGN_BY_KEY[chart.bigThree.moon]
-  const rising = SIGN_BY_KEY[chart.bigThree.rising]
-  const placeLine = [birth.location.name, birth.location.region, birth.location.country].filter(Boolean).join(' · ').toUpperCase()
+  const b = furby.birth
+  const bornAt = new Date(b.timestampUtc)
+  const sun = SIGN_BY_KEY[b.natal.sun.sign]
 
   return (
-    <div className="screen cert">
-      <Starfield density={0.7} />
-
-      <header className="cert__top row row--between">
-        <span className="eyebrow">✦ Birth certificate</span>
-        <span className="chip">FURBY {formatCertificateNumber(birth.certificateNumber)}</span>
-      </header>
-
-      <div className={`cert__portrait ${justBorn ? 'pop-in' : ''}`}>
-        <NatalWheel chart={chart} aspects={false} />
-        <div className="cert__portrait-furby">
-          <FurbyPortrait furby={furby} variant="celestial" size={124} lit eyes="open" />
-        </div>
+    <div className="screen screen--tight">
+      <Starfield density={0.6} />
+      <div className="topbar">
+        <EmbossButton to={`/furby/${furby.id}`} variant="text" className="dim">← {furby.name}</EmbossButton>
+        <span className="eyebrow">Birth certificate</span>
       </div>
 
-      <div className="cert__identity">
-        <h1 className="title title--xl">{furby.name}</h1>
+      <article className="cert">
+        <div className="cert__corner cert__corner--tl">✦</div>
+        <div className="cert__corner cert__corner--tr">✦</div>
+        <div className="cert__corner cert__corner--bl">✦</div>
+        <div className="cert__corner cert__corner--br">✦</div>
+
+        <header className="cert__head">
+          <span className="stripe stripe--center" aria-hidden="true" />
+          <div className="cert__kicker">Certificate of birth</div>
+          <div className="cert__number">Furby {formatCertificateNumber(b.certificateNumber)}</div>
+        </header>
+
+        <FurbyPortrait furby={furby} variant="certificate" size={170} eyes="open" animate={false} className="cert__portrait" />
+
+        <h1 className="cert__name">{b.furbyName}</h1>
         <div className="cert__under">
-          <span className="glyph">{sun.glyph}</span> BORN UNDER {sun.name.toUpperCase()}
+          <Glyph name={sun.key} size={18} /> Born under {sun.name}
         </div>
-        <div className="cert__when mono">
-          {formatShortDate(bornAt, tz)} · {formatTime(bornAt, tz)}
-        </div>
-        <div className="cert__where pixel">{placeLine}</div>
-      </div>
+
+        <dl className="cert__facts">
+          <div><dt>Date</dt><dd>{formatLongDate(bornAt, b.timeZone)}</dd></div>
+          <div><dt>Time</dt><dd>{formatTime(bornAt, b.timeZone)} <span className="cert__tz">{formatUtcOffset(bornAt, b.timeZone)}</span></dd></div>
+          <div><dt>Place</dt><dd>{placeLine(b)}</dd></div>
+          <div><dt>Sky</dt><dd className="pixel cert__coords">{formatCoordinates(b.latitude, b.longitude)}</dd></div>
+        </dl>
+
+        <BigThree record={b} className="cert__big-three" />
+
+        <footer className="cert__seal-row">
+          <div className="cert__seal" aria-label="Sealed">
+            <svg viewBox="0 0 100 100" width="84" height="84" aria-hidden="true">
+              <defs>
+                <path id={`seal-arc-${b.id}`} d="M50 50 m-36 0 a36 36 0 1 1 72 0 a36 36 0 1 1 -72 0" />
+              </defs>
+              <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" strokeWidth="1.2" strokeDasharray="2 3" />
+              <circle cx="50" cy="50" r="27" fill="none" stroke="currentColor" strokeWidth="1" />
+              <text fontSize="8.2" fontFamily="Silkscreen, monospace" letterSpacing="1.6" fill="currentColor">
+                <textPath href={`#seal-arc-${b.id}`} startOffset="2%">THE SKY REMEMBERS · SEALED ·</textPath>
+              </text>
+              <path d="M50 36 l3.5 9.5 9.5 3.5 -9.5 3.5 -3.5 9.5 -3.5 -9.5 -9.5 -3.5 9.5 -3.5z" fill="currentColor" />
+            </svg>
+          </div>
+          <div className="cert__seal-text">
+            <div className="cert__sealed">Sealed {formatLongDate(new Date(b.recordedAtUtc), b.timeZone)}</div>
+            <div className="hint"><Padlock className="cert__pad" /> This record cannot be altered.</div>
+          </div>
+        </footer>
+      </article>
 
       <div className="stack">
-        <Medallion kind="sun" glyph="☉" label="Sun" sign={sun.name} tagline={BIG_THREE_TAGLINES.sun} onClick={() => setSelected('sun')} className={justBorn ? 'rise-in delay-1' : ''} />
-        <Medallion kind="moon" glyph="☾" label="Moon" sign={moon.name} tagline={BIG_THREE_TAGLINES.moon} onClick={() => setSelected('moon')} className={justBorn ? 'rise-in delay-2' : ''} />
-        <Medallion kind="rising" glyph="↑" label="Rising" sign={rising.name} tagline={BIG_THREE_TAGLINES.rising} onClick={() => setSelected('ascendant')} className={justBorn ? 'rise-in delay-3' : ''} />
+        <EmbossButton to={`/furby/${furby.id}/chart`} variant="secondary">View the natal chart</EmbossButton>
       </div>
-
-      <RetroPanel label="The stars at your Furby's birth" chrome>
-        <div className="cert__wheel-wrap">
-          <NatalWheel chart={chart} onSelect={setSelected} selected={selected} />
-        </div>
-        <p className="subcopy center" style={{ marginTop: 10 }}>Tap a planet to see how it shows up in {furby.name}.</p>
-        <div className="cert__legend">
-          <span><i style={{ background: 'rgba(55,198,192,0.85)' }} /> harmonious</span>
-          <span><i style={{ background: 'rgba(255,95,162,0.85)' }} /> tense</span>
-          <span><i style={{ background: 'rgba(255,216,77,0.9)' }} /> conjunct</span>
-        </div>
-      </RetroPanel>
-
-      <section className="stack">
-        <h2 className="title title--sm">How {furby.name} is wired</h2>
-        {STORY_ORDER.map((key) => {
-          const p = chart.points.find((x) => x.key === key)
-          if (!p) return null
-          const copy = interpret(key, p.sign, furby.name)
-          const title = key === 'midheaven' ? `Midheaven in ${SIGN_BY_KEY[p.sign].name}` : `${p.name} in ${SIGN_BY_KEY[p.sign].name}`
-          return (
-            <button type="button" key={key} className="planet-row" onClick={() => setSelected(key)}>
-              <span className="planet-row__glyph">{p.glyph}</span>
-              <span>
-                <span className="planet-row__title">{title.toUpperCase()}</span>
-                <br />
-                <span className="planet-row__sub">{copy.headline}</span>
-              </span>
-              <span className="planet-row__meta">
-                {formatDegree(p.degree)}
-                <br />
-                {ordinalHouse(p.house).replace(' house', 'H')}
-                {p.retrograde && <><br /><span className="retro-tag">℞</span></>}
-              </span>
-            </button>
-          )
-        })}
-      </section>
-
-      <RetroPanel label="The fine print">
-        <div className="table-wrap">
-          <table className="data-table">
-            <thead>
-              <tr><th>Point</th><th>Position</th><th>House</th><th>Speed</th></tr>
-            </thead>
-            <tbody>
-              {chart.points.map((p) => (
-                <tr key={p.key}>
-                  <td><span className="glyph">{p.glyph}</span> {p.name}</td>
-                  <td>{formatPlacement(p)}</td>
-                  <td>{p.house}</td>
-                  <td className="dim">{['ascendant', 'midheaven', 'descendant', 'imumCoeli'].includes(p.key) ? '—' : `${p.speed.toFixed(3)}°/d`}</td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="eyebrow" style={{ margin: '14px 0 6px' }}>House cusps · {chart.houseSystem === 'placidus' ? 'Placidus' : 'Whole sign'}</div>
-        <div className="table-wrap">
-          <table className="data-table">
-            <tbody>
-              {chart.cusps.map((c, i) => {
-                const s = SIGNS[Math.floor(c / 30)]
-                return (
-                  <tr key={i}>
-                    <td>{i + 1}</td>
-                    <td>{formatDegree(c % 30)} <span className="glyph">{s.glyph}</span> {s.name}</td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="eyebrow" style={{ margin: '14px 0 6px' }}>Aspects</div>
-        <div className="table-wrap">
-          <table className="data-table">
-            <tbody>
-              {chart.aspects.map((a, i) => {
-                const p = chart.points.find((x) => x.key === a.a)!
-                const q = chart.points.find((x) => x.key === a.b)!
-                return (
-                  <tr key={i}>
-                    <td><span className="glyph">{p.glyph}</span> {p.name}</td>
-                    <td><span className="glyph">{a.glyph}</span> {a.type}</td>
-                    <td><span className="glyph">{q.glyph}</span> {q.name}</td>
-                    <td className="dim">{formatDegree(a.orb)} {a.applying ? 'a' : 's'}</td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-
-        <div className="eyebrow" style={{ margin: '14px 0 6px' }}>Cast for</div>
-        <table className="data-table">
-          <tbody>
-            <tr><td>UTC</td><td>{birth.timestampUtc}</td></tr>
-            <tr><td>Local</td><td>{formatTime(bornAt, tz)} {tzAbbreviation(bornAt, tz)} ({formatUtcOffset(bornAt, tz)})</td></tr>
-            <tr><td>Coordinates</td><td>{formatCoordinates(birth.location.latitude, birth.location.longitude)}</td></tr>
-            <tr><td>RAMC</td><td>{chart.ramc.toFixed(3)}°</td></tr>
-            <tr><td>Obliquity</td><td>{chart.obliquity.toFixed(4)}°</td></tr>
-            <tr><td>Zodiac</td><td>tropical · geocentric</td></tr>
-            <tr><td>Recorded</td><td>{birth.mode === 'moment' ? 'server time at confirmation' : 'chosen by owner'}</td></tr>
-          </tbody>
-        </table>
-      </RetroPanel>
-
-      <div className="stack">
-        <EmbossButton to={`/furby/${furby.id}`} variant="gold">Go to {furby.name}'s profile</EmbossButton>
-        <EmbossButton to="/" variant="ghost">Nursery</EmbossButton>
-      </div>
-
-      {selected && <PlanetSheet chart={chart} pointKey={selected} name={furby.name} onClose={() => setSelected(null)} />}
     </div>
   )
 }

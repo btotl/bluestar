@@ -12,23 +12,23 @@ html {
 body {
   margin: 0;
   min-height: 100dvh;
-  background: var(--midnight);
+  background: radial-gradient(120% 80% at 50% 0%, #0d1538 0%, var(--midnight) 55%);
   color: var(--text);
-  font-family: var(--font-mono);
-  font-size: 15px;
+  font-family: var(--font-ui);
+  font-size: 16px;
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
   overscroll-behavior-y: none;
 }
 
-/* Film grain / dither over everything, very faint. */
+/* Faint grain over everything */
 body::after {
   content: '';
   position: fixed;
   inset: 0;
   pointer-events: none;
   z-index: 9999;
-  opacity: 0.14;
+  opacity: 0.1;
   mix-blend-mode: overlay;
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.6 0'/%3E%3C/filter%3E%3Crect width='160' height='160' filter='url(%23n)'/%3E%3C/svg%3E");
 }
@@ -57,10 +57,9 @@ input {
   appearance: none;
 }
 
-.glyph {
-  font-family: var(--font-glyph);
-  font-weight: 400;
-  line-height: 1;
+.glyph-svg {
+  display: inline-block;
+  flex: none;
 }
 
 .display {
@@ -71,7 +70,7 @@ input {
 
 .pixel {
   font-family: var(--font-pixel);
-  letter-spacing: 0.04em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
@@ -96,18 +95,22 @@ input {
   white-space: nowrap;
 }
 
-/* Screen shell: a phone-shaped column, full height, safe-area aware. */
+/* Screen shell */
 .screen {
   position: relative;
   width: 100%;
   max-width: var(--screen-max);
   margin: 0 auto;
   min-height: 100dvh;
-  padding: calc(env(safe-area-inset-top, 0px) + 16px) var(--gutter) calc(env(safe-area-inset-bottom, 0px) + 28px);
+  padding: calc(env(safe-area-inset-top, 0px) + 20px) var(--gutter) calc(env(safe-area-inset-bottom, 0px) + 32px);
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: var(--gap-section);
   isolation: isolate;
+}
+
+.screen--tight {
+  gap: 24px;
 }
 
 .screen--center {
@@ -118,6 +121,10 @@ input {
   display: flex;
   flex-direction: column;
   gap: 12px;
+}
+
+.stack--loose {
+  gap: 20px;
 }
 
 .row {
@@ -136,24 +143,6 @@ input {
 
 .center {
   text-align: center;
-}
-
-/* Ordered-dither checkerboard, use as an overlay for that dithered gradient feel */
-.dither {
-  position: relative;
-}
-
-.dither::before {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  border-radius: inherit;
-  background:
-    conic-gradient(rgba(255, 255, 255, 0.5) 25%, transparent 0 50%, rgba(255, 255, 255, 0.5) 0 75%, transparent 0) 0 0 / 3px 3px;
-  -webkit-mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.35), transparent 60%);
-  mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.35), transparent 60%);
-  opacity: 0.35;
 }
 
 @media (prefers-reduced-motion: reduce) {

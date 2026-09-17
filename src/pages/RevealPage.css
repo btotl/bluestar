@@ -1,0 +1,22 @@
+.reveal__body {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 22px;
+  text-align: center;
+}
+
+.reveal__sign {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--yellow);
+}
+
+.reveal__under {
+  font-family: var(--font-ui);
+  font-size: 16px;
+  color: var(--yellow);
+  letter-spacing: 0.02em;
+}

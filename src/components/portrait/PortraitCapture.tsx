@@ -206,7 +206,7 @@ export function PortraitCapture({ furbyName, onDone, onSkip, onCancel }: Props) 
           <p className="subcopy">Every Furby is different. Take a portrait so we'll always know exactly who was born under these stars.</p>
         </header>
 
-        <div className="pc__viewport panel panel--chrome">
+        <div className="pc__viewport card">
           <div className="pc__viewport-inner">
             <Starfield density={1.2} />
             <GuideOutline className="pc__guide pc__guide--intro" />
@@ -216,8 +216,8 @@ export function PortraitCapture({ furbyName, onDone, onSkip, onCancel }: Props) 
 
         <div className="stack" style={{ marginTop: 'auto' }}>
           <EmbossButton onClick={takePortrait}>📷 Take birth portrait</EmbossButton>
-          <EmbossButton variant="chrome" onClick={() => openPicker(false)}>Choose photo</EmbossButton>
-          <button type="button" className="btn btn--text center" onClick={onSkip}>Birth without a portrait</button>
+          <EmbossButton variant="secondary" onClick={() => openPicker(false)}>Choose photo</EmbossButton>
+          <button type="button" className="btn btn--text dim" style={{ alignSelf: 'center' }} onClick={onSkip}>Birth without a portrait</button>
         </div>
         <input ref={fileRef} type="file" accept="image/*" className="sr-only" onChange={onFile} tabIndex={-1} />
       </div>
@@ -247,7 +247,7 @@ export function PortraitCapture({ furbyName, onDone, onSkip, onCancel }: Props) 
           {cameraError && (
             <div className="pc-camera__error">
               <p>{cameraError}</p>
-              <EmbossButton variant="chrome" small onClick={() => openPicker(true)}>Use the phone camera app</EmbossButton>
+              <EmbossButton variant="secondary" small onClick={() => openPicker(true)}>Use the phone camera app</EmbossButton>
             </div>
           )}
         </div>
@@ -307,7 +307,7 @@ export function PortraitCapture({ furbyName, onDone, onSkip, onCancel }: Props) 
         )}
         <div className="stack" style={{ marginTop: 'auto' }}>
           <EmbossButton onClick={() => onDone(result.asset, result.diagnostics)}>Use this portrait</EmbossButton>
-          <EmbossButton variant="chrome" onClick={takePortrait}>Retake</EmbossButton>
+          <EmbossButton variant="secondary" onClick={takePortrait}>Retake</EmbossButton>
         </div>
       </div>
     )
@@ -327,7 +327,7 @@ export function PortraitCapture({ furbyName, onDone, onSkip, onCancel }: Props) 
         </p>
         <div className="stack">
           <EmbossButton onClick={takePortrait}>Retake photo</EmbossButton>
-          <EmbossButton variant="chrome" onClick={() => lastFileRef.current && process(lastFileRef.current)}>Try this photo again</EmbossButton>
+          <EmbossButton variant="secondary" onClick={() => lastFileRef.current && process(lastFileRef.current)}>Try this photo again</EmbossButton>
           <button type="button" className="btn btn--text" onClick={() => lastFileRef.current && process(lastFileRef.current, { uncut: true })}>
             Use the photo uncut
           </button>

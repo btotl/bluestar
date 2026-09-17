@@ -1,18 +1,19 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { birthApi } from '../api/birthApi'
-import type { BirthLocation, BirthRecord } from '../api/types'
-import { buildNatalChart } from '../astro/chart'
+import type { BirthLocation, BirthRecord as ServerBirthRecord } from '../api/types'
+import { Glyph } from '../astro/glyphs'
+import { createBirthRecord } from '../birth/birthRecord'
 import { BirthMomentPicker, type MomentChoice } from '../components/BirthMomentPicker'
 import { BirthSequence } from '../components/BirthSequence'
 import { ConfirmBirthCard } from '../components/ConfirmBirthCard'
 import { FurbyPortrait } from '../components/FurbyPortrait'
 import { LocationPicker } from '../components/LocationPicker'
 import { PortraitCapture } from '../components/portrait/PortraitCapture'
-import { EmbossButton, RetroPanel } from '../components/primitives'
+import { EmbossButton } from '../components/primitives'
 import { Starfield } from '../components/Starfield'
 import { DEFAULT_PLACE_ID, findPlace } from '../data/places'
-import { locationLabel, placeToLocation } from '../lib/location'
+import { placeToLocation } from '../lib/location'
 import { formatLongDate, formatTime } from '../lib/time'
 import { deletePortrait, forgetPortraitUrls, pruneOrphans, putPortrait, sealPortrait } from '../portrait/portraitDb'
 import type { PortraitAsset, PortraitRef } from '../portrait/types'
@@ -28,13 +29,23 @@ function momentFromDraft(d: BirthDraft | null): MomentChoice {
   return { mode: 'moment' }
 }
 
+/** Live clock for "use this moment": the server still stamps the real one. */
+function useTicking(active: boolean): Date {
+  const [now, setNow] = useState(() => new Date())
+  useEffect(() => {
+    if (!active) return
+    const t = setInterval(() => setNow(new Date()), 250)
+    return () => clearInterval(t)
+  }, [active])
+  return now
+}
+
 export function BirthPage() {
   const navigate = useNavigate()
   const addFurby = useFurbyStore((s) => s.addFurby)
   const furbys = useFurbyStore((s) => s.furbys)
   const hasFurbys = useFurbyStore((s) => s.order.length > 0)
 
-  // A refresh mid-ritual restores the draft (name, place, portrait) from sessionStorage.
   const [draft] = useState(() => loadBirthDraft())
   const [name, setName] = useState(draft?.name ?? '')
   const [location, setLocation] = useState<BirthLocation>(() => draft?.location ?? placeToLocation(findPlace(DEFAULT_PLACE_ID)!))
@@ -50,8 +61,8 @@ export function BirthPage() {
   const [born, setBorn] = useState<Furby | null>(null)
   const requestIdRef = useRef<string | null>(draft?.clientRequestId ?? null)
   const inFlightRef = useRef(false)
+  const now = useTicking(phase === 'form' && moment.mode === 'moment')
 
-  // Abandoned captures from earlier sessions are cleaned up here, never mid-flow.
   useEffect(() => {
     const keep = new Set<string>()
     for (const f of Object.values(furbys)) for (const r of f.portraits ?? []) keep.add(r.id)
@@ -73,32 +84,23 @@ export function BirthPage() {
   }, [name, location, moment, portrait, phase])
 
   const closeSheet = useCallback(() => setSheet(null), [])
-  const canBirth = name.trim().length > 0
+  const trimmed = name.trim()
+  const canBirth = trimmed.length > 0
   const needsPortraitStep = canBirth && !portrait && !portraitSkipped
+  const displayMoment = moment.mode === 'chosen' ? moment.utc : now
 
   const replacePortrait = async (asset: PortraitAsset) => {
-    // A retake before Birth replaces the draft; nothing is permanent yet.
     if (portrait && portrait.id !== asset.id) {
       forgetPortraitUrls(portrait.id)
       void deletePortrait(portrait.id)
     }
     await putPortrait(asset)
-    setPortrait({
-      id: asset.id,
-      view: 'front',
-      createdAtUtc: asset.createdAtUtc,
-      width: asset.width,
-      height: asset.height,
-      processor: asset.processor,
-      uncut: asset.uncut,
-    })
+    setPortrait({ id: asset.id, view: 'front', createdAtUtc: asset.createdAtUtc, width: asset.width, height: asset.height, processor: asset.processor, uncut: asset.uncut })
     setPortraitSkipped(false)
     setPhase('form')
   }
 
   const openConfirm = () => {
-    // One idempotency key per confirmation card: a double tap or a retry after
-    // a dropped response resolves to the same birth on the server.
     if (!requestIdRef.current) requestIdRef.current = newClientRequestId()
     setPhase('confirm')
   }
@@ -110,29 +112,24 @@ export function BirthPage() {
     setError(null)
     try {
       // The only place a birth instant is created: the server stamps it on receipt.
-      const record: BirthRecord = await birthApi.confirmBirth({
-        name: name.trim(),
+      const server: ServerBirthRecord = await birthApi.confirmBirth({
+        name: trimmed,
         location,
         requestedMomentUtc: moment.mode === 'chosen' ? moment.utc.toISOString() : undefined,
         birthPortraitId: portrait?.id,
         clientRequestId: requestIdRef.current ?? newClientRequestId(),
       })
-      const chart = buildNatalChart({
-        timestampUtc: record.timestampUtc,
-        latitude: record.location.latitude,
-        longitude: record.location.longitude,
-      })
       const birthPortrait: PortraitRef | undefined = portrait
         ? { id: portrait.id, kind: 'birth', view: portrait.view, createdAtUtc: portrait.createdAtUtc, width: portrait.width, height: portrait.height, processor: portrait.processor, locked: true, uncut: portrait.uncut }
         : undefined
+      // One canonical, immutable Birth object. Everything else derives from it.
+      const birth = createBirthRecord(server, birthPortrait)
       const furby: Furby = {
-        id: record.furbyId,
-        name: record.name,
+        id: birth.id,
+        name: birth.furbyName,
         owner: '',
-        birth: record,
-        chart,
-        createdAtUtc: record.recordedAtUtc,
-        birthPortraitId: birthPortrait?.id,
+        birth,
+        createdAtUtc: birth.recordedAtUtc,
         portraits: birthPortrait ? [birthPortrait] : undefined,
       }
       addFurby(furby)
@@ -149,13 +146,13 @@ export function BirthPage() {
   }
 
   if (phase === 'sequence' && born) {
-    return <BirthSequence furby={born} onDone={() => navigate(`/furby/${born.id}/certificate?born=1`, { replace: true })} />
+    return <BirthSequence furby={born} onDone={() => navigate(`/furby/${born.id}/reveal`, { replace: true })} />
   }
 
   if (phase === 'portrait') {
     return (
       <PortraitCapture
-        furbyName={name.trim()}
+        furbyName={trimmed}
         onDone={(asset) => void replacePortrait(asset)}
         onSkip={() => {
           setPortraitSkipped(true)
@@ -169,41 +166,43 @@ export function BirthPage() {
   const confirming = phase === 'confirm'
 
   return (
-    <div className={`screen birth-page ${confirming ? 'birth-page--confirming' : ''}`}>
-      <Starfield density={confirming ? 1.4 : 0.8} burst={confirming ? 40 : 0} />
+    <div className={`screen birth ${confirming ? 'birth--confirming' : ''}`}>
+      <Starfield density={confirming ? 1.3 : 0.7} burst={confirming ? 30 : 0} />
 
       {hasFurbys && !confirming && (
-        <div className="row row--between birth-page__nav">
-          <button type="button" className="btn btn--text" onClick={() => navigate('/')}>← Nursery</button>
+        <div className="topbar">
+          <button type="button" className="btn btn--text dim" onClick={() => navigate('/')}>← Nursery</button>
         </div>
       )}
 
-      <header className="birth-page__header">
-        <h1 className="title title--lg stars-title">A new Furby awaits</h1>
-        <p className="subcopy">The stars will remember the moment it wakes.</p>
-      </header>
-
-      <div className="hero birth-page__hero">
-        <div className={`halo ${confirming ? 'halo--lit' : ''}`} />
-        <FurbyPortrait
-          portraitId={portrait?.id}
-          variant="birth"
-          size={confirming ? 210 : 190}
-          decorative={false}
-          asleep={!confirming}
-          lit={confirming}
-          eyes="closed"
-          alt={portrait ? `${name || 'Your Furby'}, asleep` : 'An unborn Furby, asleep'}
-        />
-      </div>
-
-      <RetroPanel label="Birth record · draft" className="birth-page__panel">
-        <div className="field">
-          <label className="field__label" htmlFor="furby-name">Name</label>
+      {/* 1. The Furby. Nothing on this screen outweighs it. */}
+      <section className="birth__hero">
+        <div className="birth__intro">
+          <span className="birth__star" aria-hidden="true">✦</span>
+          <h1 className="title title--xl">A new Furby<br />awaits</h1>
+          <p className="lead dim">The stars will remember the moment it wakes.</p>
+        </div>
+        <div className="birth__portrait">
+          <div className={`halo ${confirming ? 'halo--lit' : ''}`} />
+          <FurbyPortrait
+            portraitId={portrait?.id}
+            variant="birth"
+            size={250}
+            decorative={false}
+            asleep={!confirming}
+            lit={confirming}
+            float
+            eyes="closed"
+            className="birth__portrait-img"
+            alt={portrait ? `${trimmed || 'Your Furby'}, asleep` : 'An unborn Furby, asleep'}
+          />
+        </div>
+        <div className="birth__name">
+          <label className="sr-only" htmlFor="furby-name">Name</label>
           <input
             id="furby-name"
-            className="input"
-            placeholder="_______________"
+            className="name-edit"
+            placeholder="NAME IT"
             maxLength={18}
             autoComplete="off"
             autoCapitalize="words"
@@ -211,86 +210,72 @@ export function BirthPage() {
             onChange={(e) => setName(e.target.value)}
             disabled={confirming}
           />
+          <div className="name-edit__hint">{trimmed ? 'Tap to edit' : 'Every Furby needs a name'}</div>
         </div>
+      </section>
 
-        <div className="field">
-          <div className="field__label"><span className="glyph">◐</span> Birth portrait</div>
-          <button type="button" className="value-row" onClick={() => setPhase('portrait')} disabled={confirming}>
-            {portrait ? (
-              <>
-                <FurbyPortrait portraitId={portrait.id} variant="thumbnail" size={44} shadow={false} alt="" />
-                <span className="value-row__main">
-                  <span className="value-row__primary">Portrait ready</span>
-                  <span className="value-row__secondary">{portrait.uncut ? 'Kept uncut' : 'Cut out and waiting'} · retake any time before birth</span>
-                </span>
-                <span className="value-row__action">Retake</span>
-              </>
-            ) : (
-              <>
-                <span className="value-row__icon glyph">📷</span>
-                <span className="value-row__main">
-                  <span className="value-row__primary">SHOW US YOUR FURBY</span>
-                  <span className="value-row__secondary">{portraitSkipped ? 'Skipped · the drawn Furby stands in' : 'Photograph the real one'}</span>
-                </span>
-                <span className="value-row__action">{portraitSkipped ? 'Add' : 'Take'}</span>
-              </>
-            )}
-          </button>
-        </div>
+      {/* 2. Three facts, as light rows. */}
+      <section className="rows">
+        <button type="button" className="row-item" onClick={() => setPhase('portrait')} disabled={confirming}>
+          <span className="row-item__icon">
+            {portrait ? <FurbyPortrait portraitId={portrait.id} variant="thumbnail" size={40} shadow={false} alt="" /> : <Glyph name="sun" size={22} />}
+          </span>
+          <span className="row-item__main">
+            <span className="row-item__label">Birth portrait</span>
+            <span className="row-item__value">{portrait ? 'Portrait ready' : portraitSkipped ? 'Not taken' : 'Show us your Furby'}</span>
+            <span className="row-item__sub">{portrait ? (portrait.uncut ? 'Kept uncut · retake any time before birth' : 'Retake any time before birth') : 'Photograph the real one'}</span>
+          </span>
+          <span className="row-item__action">
+            {portrait ? <span className="row-item__check">✓</span> : <span className="row-item__chevron">›</span>}
+          </span>
+        </button>
 
-        <div className="field">
-          <div className="field__label"><span className="glyph">◍</span> Birth location</div>
-          <button type="button" className="value-row" onClick={() => setSheet('location')} disabled={confirming}>
-            <span className="value-row__icon glyph">⌖</span>
-            <span className="value-row__main">
-              <span className="value-row__primary">{locationLabel(location)}</span>
-              <span className="value-row__secondary">{location.timeZone}</span>
-            </span>
-            <span className="value-row__action">Change</span>
-          </button>
-        </div>
+        <button type="button" className="row-item" onClick={() => setSheet('location')} disabled={confirming}>
+          <span className="row-item__icon"><Glyph name="conjunction" size={22} /></span>
+          <span className="row-item__main">
+            <span className="row-item__label">Birth place</span>
+            <span className="row-item__value">{[location.name, location.region || location.country].filter(Boolean).join(', ')}</span>
+            <span className="row-item__sub">{location.country && location.region ? `${location.country} · ` : ''}{location.timeZone}</span>
+          </span>
+          <span className="row-item__action"><span className="row-item__chevron">›</span></span>
+        </button>
+      </section>
 
-        <div className="field">
-          <div className="field__label"><span className="glyph">✦</span> Birth moment</div>
-          <button type="button" className="value-row" onClick={() => setSheet('moment')} disabled={confirming}>
-            <span className="value-row__icon glyph">{moment.mode === 'moment' ? '◉' : '◷'}</span>
-            <span className="value-row__main">
-              {moment.mode === 'moment' ? (
-                <>
-                  <span className="value-row__primary">USE THIS MOMENT</span>
-                  <span className="value-row__secondary">Stamped the instant you confirm</span>
-                </>
-              ) : (
-                <>
-                  <span className="value-row__primary">{formatTime(moment.utc, location.timeZone)}</span>
-                  <span className="value-row__secondary">{formatLongDate(moment.utc, location.timeZone)} · chosen</span>
-                </>
-              )}
-            </span>
-            <span className="value-row__action">{moment.mode === 'moment' ? 'Other' : 'Change'}</span>
-          </button>
-        </div>
-      </RetroPanel>
+      {/* 3. The moment. The one input that decides everything. */}
+      <section className="moment">
+        <div className="eyebrow moment__label">Birth moment</div>
+        <div className="moment__time">{formatTime(displayMoment, location.timeZone)}</div>
+        <div className="moment__date">{formatLongDate(displayMoment, location.timeZone).toUpperCase()}</div>
+        <p className="moment__note">
+          {moment.mode === 'moment'
+            ? `This exact instant will determine ${trimmed || 'your Furby'}'s permanent sky.`
+            : `A chosen time, for a Furby that already exists. It will determine ${trimmed || 'your Furby'}'s permanent sky.`}
+        </p>
+        <button type="button" className="btn btn--text dim moment__change" onClick={() => setSheet('moment')} disabled={confirming}>
+          {moment.mode === 'moment' ? 'Choose another birth time' : 'Use this moment instead'}
+        </button>
+      </section>
 
-      <div className="birth-page__cta">
+      {/* 4. The decision. */}
+      <section className="birth__cta">
         {needsPortraitStep ? (
           <EmbossButton variant="chrome" ceremonial disabled={confirming} onClick={() => setPhase('portrait')}>
             Show us your Furby
           </EmbossButton>
         ) : (
           <EmbossButton ceremonial disabled={!canBirth || confirming} onClick={openConfirm}>
-            Birth my Furby
+            Birth {trimmed || 'Furby'}
           </EmbossButton>
         )}
-        {!canBirth && <p className="subcopy center faint" style={{ fontSize: 12 }}>Give it a name first.</p>}
-      </div>
+        <p className="hint center">{canBirth ? 'This moment becomes permanent.' : 'Give it a name first.'}</p>
+      </section>
 
       {sheet === 'location' && <LocationPicker value={location} onChange={setLocation} onClose={closeSheet} />}
       {sheet === 'moment' && <BirthMomentPicker value={moment} timeZone={location.timeZone} onChange={setMoment} onClose={closeSheet} />}
 
       {confirming && (
         <ConfirmBirthCard
-          name={name.trim()}
+          name={trimmed}
           location={location}
           moment={moment}
           portraitId={portrait?.id}

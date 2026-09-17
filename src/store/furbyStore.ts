@@ -1,25 +1,19 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
-import type { BirthRecord } from '../api/types'
+import type { BirthRecord as ServerBirthRecord } from '../api/types'
 import type { NatalChart } from '../astro/types'
+import { createBirthRecord, freezeBirthRecord, type BirthRecord } from '../birth/birthRecord'
 import type { PortraitRef } from '../portrait/types'
 
 export interface Furby {
   id: string
-  /** Renamable. The name at birth lives in birth.name. */
+  /** Renamable. The name at birth lives in birth.furbyName. */
   name: string
   owner: string
-  /** Immutable once written. */
-  readonly birth: Readonly<BirthRecord>
-  /** Derived from birth; cached so the certificate renders instantly. */
-  readonly chart: Readonly<NatalChart>
+  /** The canonical, immutable Birth object. Everything astrological derives from it. */
+  readonly birth: BirthRecord
   createdAtUtc: string
-  /**
-   * The Birth Portrait, if one was taken. Optional so Furbys born before
-   * portraits existed keep working and fall back to the drawn sprite.
-   */
-  readonly birthPortraitId?: string
-  /** All portraits, oldest first. The birth portrait is locked and never replaced. */
+  /** All portraits, oldest first. birth.portrait is the locked Birth Portrait. */
   portraits?: PortraitRef[]
 }
 
@@ -35,12 +29,28 @@ interface FurbyState {
   addPortrait: (id: string, ref: PortraitRef) => void
 }
 
-function deepFreeze<T>(value: T): T {
-  if (value && typeof value === 'object' && !Object.isFrozen(value)) {
-    Object.freeze(value)
-    for (const v of Object.values(value as Record<string, unknown>)) deepFreeze(v)
+/** Shape persisted by the first release, before the canonical BirthRecord. */
+interface LegacyFurby {
+  id: string
+  name: string
+  owner: string
+  birth: ServerBirthRecord
+  chart: NatalChart
+  createdAtUtc: string
+  birthPortraitId?: string
+  portraits?: PortraitRef[]
+}
+
+function migrateLegacy(f: LegacyFurby): Furby {
+  const portrait = f.portraits?.find((p) => p.id === f.birthPortraitId) ?? f.portraits?.find((p) => p.kind === 'birth')
+  return {
+    id: f.id,
+    name: f.name,
+    owner: f.owner ?? '',
+    birth: createBirthRecord(f.birth, portrait),
+    createdAtUtc: f.createdAtUtc,
+    portraits: f.portraits,
   }
-  return value
 }
 
 export const useFurbyStore = create<FurbyState>()(
@@ -50,7 +60,7 @@ export const useFurbyStore = create<FurbyState>()(
       order: [],
       addFurby: (furby) =>
         set((s) => ({
-          furbys: { ...s.furbys, [furby.id]: { ...furby, birth: deepFreeze(furby.birth), chart: deepFreeze(furby.chart) } },
+          furbys: { ...s.furbys, [furby.id]: { ...furby, birth: freezeBirthRecord(furby.birth) } },
           order: s.order.includes(furby.id) ? s.order : [...s.order, furby.id],
         })),
       renameFurby: (id, name) =>
@@ -71,7 +81,7 @@ export const useFurbyStore = create<FurbyState>()(
         set((s) => {
           const f = s.furbys[id]
           if (!f) return s
-          if (ref.kind === 'birth' && f.birthPortraitId) return s
+          if (ref.kind === 'birth') return s
           const portraits = [...(f.portraits ?? []), ref]
           return { furbys: { ...s.furbys, [id]: { ...f, portraits } } }
         }),
@@ -84,12 +94,25 @@ export const useFurbyStore = create<FurbyState>()(
     }),
     {
       name: 'bluestar.furbys.v1',
+      version: 2,
+      migrate: (persisted, version) => {
+        const state = persisted as { furbys: Record<string, unknown>; order: string[] }
+        if (version < 2) {
+          const furbys: Record<string, Furby> = {}
+          for (const [id, raw] of Object.entries(state.furbys ?? {})) {
+            try {
+              furbys[id] = migrateLegacy(raw as LegacyFurby)
+            } catch {
+              /* a record that cannot be rebuilt is dropped rather than shown wrong */
+            }
+          }
+          return { furbys, order: (state.order ?? []).filter((id) => furbys[id]) }
+        }
+        return state as unknown as FurbyState
+      },
       onRehydrateStorage: () => (state) => {
         if (!state) return
-        for (const f of Object.values(state.furbys)) {
-          deepFreeze(f.birth)
-          deepFreeze(f.chart)
-        }
+        for (const f of Object.values(state.furbys)) freezeBirthRecord(f.birth)
       },
     },
   ),

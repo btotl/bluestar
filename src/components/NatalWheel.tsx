@@ -1,44 +1,55 @@
-import { useMemo } from 'react'
+import { useId, useMemo } from 'react'
+import { GlyphAt } from '../astro/glyphs'
 import { SIGNS } from '../astro/signs'
-import type { AspectType, NatalChart, Placement, PointKey } from '../astro/types'
+import type { AspectType, Placement, PointKey } from '../astro/types'
+import type { Natal } from '../birth/birthRecord'
 import './NatalWheel.css'
 
+/**
+ * Reveal stages, in the order the sky forms around the Furby during Birth.
+ * 'full' is the resting state for every static screen.
+ */
+export type WheelStage = 'none' | 'ring' | 'houses' | 'angles' | 'planets' | 'aspects' | 'full'
+const STAGE_ORDER: WheelStage[] = ['none', 'ring', 'houses', 'angles', 'planets', 'aspects', 'full']
+
 interface Props {
-  chart: NatalChart
+  natal: Natal
   size?: number | string
-  /** Show aspect lines in the centre. */
+  stage?: WheelStage
   aspects?: boolean
-  /** Keys of points to draw (defaults to planets + node, angles are drawn as lines). */
   onSelect?: (key: PointKey) => void
   selected?: PointKey | null
-  /** Progressive reveal 0..1 used by the birth animation. */
-  reveal?: number
+  /**
+   * Radius (as a fraction of the inner circle) kept clear of aspect geometry
+   * so a portrait in the centre stays readable. 0 draws full chords.
+   */
+  centerClear?: number
   className?: string
 }
 
 const ELEMENT_TINT: Record<string, string> = {
-  fire: 'rgba(255, 154, 60, 0.20)',
-  earth: 'rgba(184, 243, 107, 0.13)',
-  air: 'rgba(55, 198, 192, 0.16)',
-  water: 'rgba(142, 107, 216, 0.22)',
+  fire: 'rgba(255, 154, 60, 0.16)',
+  earth: 'rgba(184, 243, 107, 0.10)',
+  air: 'rgba(55, 198, 192, 0.13)',
+  water: 'rgba(142, 107, 216, 0.18)',
 }
 
 const ASPECT_COLOUR: Record<AspectType, string> = {
-  conjunction: 'rgba(255, 216, 77, 0.9)',
-  opposition: 'rgba(255, 95, 162, 0.85)',
-  square: 'rgba(255, 95, 162, 0.7)',
-  trine: 'rgba(55, 198, 192, 0.85)',
-  sextile: 'rgba(55, 198, 192, 0.55)',
+  conjunction: 'rgba(255, 216, 77, 0.85)',
+  opposition: 'rgba(255, 95, 162, 0.8)',
+  square: 'rgba(255, 95, 162, 0.62)',
+  trine: 'rgba(55, 198, 192, 0.8)',
+  sextile: 'rgba(55, 198, 192, 0.5)',
 }
 
 const PLANET_KEYS: PointKey[] = ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto', 'northNode']
 
 const C = 200
 const R_OUTER = 192
-const R_SIGN_IN = 160
-const R_HOUSE_IN = 122
-const R_PLANET = 102
-const R_ASPECT = 84
+const R_SIGN_IN = 164
+const R_HOUSE_IN = 126
+const R_PLANET = 108
+const R_ASPECT = 88
 
 function polar(r: number, screenDeg: number): [number, number] {
   const a = (screenDeg * Math.PI) / 180
@@ -70,99 +81,123 @@ function spread(points: { key: PointKey; angle: number }[], minGap: number) {
   return out
 }
 
-export function NatalWheel({ chart, size = '100%', aspects = true, onSelect, selected = null, reveal = 1, className = '' }: Props) {
-  const asc = chart.cusps[0]
+/**
+ * Every mark on this wheel is a calculated fact from the Birth record: sign
+ * sectors rotate to the Ascendant, cusps are the house system's, planets sit
+ * at their longitudes, aspect lines join the pairs the engine found.
+ */
+export function NatalWheel({ natal, size = '100%', stage = 'full', aspects = true, onSelect, selected = null, centerClear = 0.55, className = '' }: Props) {
+  const uid = useId().replace(/:/g, '')
+  const level = STAGE_ORDER.indexOf(stage)
+  const on = (s: WheelStage) => level >= STAGE_ORDER.indexOf(s)
+  const asc = natal.houses.cusps[0]
   const toScreen = (lon: number) => 180 + (lon - asc)
 
   const byKey = useMemo(() => {
     const m = new Map<PointKey, Placement>()
-    for (const p of chart.points) m.set(p.key, p)
+    for (const p of natal.points) m.set(p.key, p)
     return m
-  }, [chart])
+  }, [natal])
 
-  const planets = useMemo(() => {
-    const pts = PLANET_KEYS.filter((k) => byKey.has(k)).map((k) => ({ key: k, angle: toScreen(byKey.get(k)!.longitude) }))
-    return spread(pts, 9)
+  const planets = useMemo(
+    () => spread(PLANET_KEYS.filter((k) => byKey.has(k)).map((k) => ({ key: k, angle: toScreen(byKey.get(k)!.longitude) })), 9),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [byKey, asc])
+    [byKey, asc],
+  )
 
-  const signOpacity = Math.min(1, reveal * 1.6)
-  const houseOpacity = Math.max(0, Math.min(1, (reveal - 0.3) * 2))
-  const planetOpacity = Math.max(0, Math.min(1, (reveal - 0.55) * 2.5))
-  const aspectOpacity = Math.max(0, Math.min(1, (reveal - 0.8) * 5))
+  const clearR = R_ASPECT * centerClear
 
   return (
-    <svg viewBox="0 0 400 400" width={size} height={size} className={`wheel ${className}`} role="img" aria-label="Natal chart wheel">
+    <svg viewBox="0 0 400 400" width={size} height={size} className={`wheel wheel--${stage} ${className}`} role="img" aria-label="Natal chart wheel">
       <defs>
-        <radialGradient id="wheel-bg" cx="50%" cy="50%" r="50%">
-          <stop offset="0%" stopColor="#101838" />
+        <radialGradient id={`bg-${uid}`} cx="50%" cy="50%" r="50%">
+          <stop offset="0%" stopColor="#0f1737" />
           <stop offset="100%" stopColor="#070b1f" />
         </radialGradient>
+        {/* Aspect lines fade out before they reach the portrait */}
+        <radialGradient id={`clear-${uid}`} gradientUnits="userSpaceOnUse" cx={C} cy={C} r={R_ASPECT}>
+          <stop offset={Math.max(0, centerClear - 0.12)} stopColor="#000" />
+          <stop offset={Math.min(1, centerClear + 0.1)} stopColor="#fff" />
+        </radialGradient>
+        <mask id={`mask-${uid}`}>
+          <rect x="0" y="0" width="400" height="400" fill={`url(#clear-${uid})`} />
+        </mask>
       </defs>
-      <circle cx={C} cy={C} r={R_OUTER + 4} fill="url(#wheel-bg)" stroke="#05060f" strokeWidth="4" />
 
-      {/* sign ring */}
-      <g opacity={signOpacity}>
+      <circle cx={C} cy={C} r={R_OUTER + 4} fill={`url(#bg-${uid})`} className={`wheel__bg ${on('ring') ? 'is-on' : ''}`} />
+
+      {/* 1. zodiac ring */}
+      <g className={`wheel__layer wheel__signs ${on('ring') ? 'is-on' : ''}`}>
         {SIGNS.map((s) => {
           const a0 = toScreen(s.index * 30)
           const a1 = toScreen(s.index * 30 + 30)
           const [gx, gy] = polar((R_OUTER + R_SIGN_IN) / 2, a0 + 15)
           return (
             <g key={s.key}>
-              <path d={arcPath(R_SIGN_IN, R_OUTER, a0, a1)} fill={ELEMENT_TINT[s.element]} stroke="#05060f" strokeWidth="1.5" />
-              <text x={gx} y={gy} className="wheel__sign-glyph" textAnchor="middle" dominantBaseline="central">{s.glyph}</text>
-              {/* 5-degree ticks */}
+              <path d={arcPath(R_SIGN_IN, R_OUTER, a0, a1)} fill={ELEMENT_TINT[s.element]} stroke="rgba(5,6,15,0.7)" strokeWidth="1" />
+              <GlyphAt name={s.key} x={gx} y={gy} size={16} stroke="#fff4cc" strokeWidth={2} />
               {[5, 10, 15, 20, 25].map((d) => {
                 const [tx0, ty0] = polar(R_SIGN_IN, a0 + d)
-                const [tx1, ty1] = polar(R_SIGN_IN + (d === 15 ? 7 : 4), a0 + d)
-                return <line key={d} x1={tx0} y1={ty0} x2={tx1} y2={ty1} stroke="rgba(255,244,204,0.45)" strokeWidth="1" />
+                const [tx1, ty1] = polar(R_SIGN_IN + (d === 15 ? 6 : 3.5), a0 + d)
+                return <line key={d} x1={tx0} y1={ty0} x2={tx1} y2={ty1} className="wheel__tick" />
               })}
             </g>
           )
         })}
-        <circle cx={C} cy={C} r={R_SIGN_IN} fill="none" stroke="#05060f" strokeWidth="2.5" />
-        <circle cx={C} cy={C} r={R_OUTER} fill="none" stroke="#c3ccd9" strokeWidth="1.5" />
+        <circle cx={C} cy={C} r={R_SIGN_IN} className="wheel__ring-inner" />
+        <circle cx={C} cy={C} r={R_OUTER} className="wheel__ring-outer" pathLength={1} />
       </g>
 
-      {/* house cusps */}
-      <g opacity={houseOpacity}>
-        {chart.cusps.map((cusp, i) => {
+      {/* 2. houses */}
+      <g className={`wheel__layer wheel__houses ${on('houses') ? 'is-on' : ''}`}>
+        {natal.houses.cusps.map((cusp, i) => {
           const a = toScreen(cusp)
           const angular = i === 0 || i === 3 || i === 6 || i === 9
+          if (angular) return null
           const [x0, y0] = polar(R_ASPECT, a)
           const [x1, y1] = polar(R_SIGN_IN, a)
-          const next = chart.cusps[(i + 1) % 12]
+          return <line key={i} x1={x0} y1={y0} x2={x1} y2={y1} className="wheel__cusp" />
+        })}
+        {natal.houses.cusps.map((cusp, i) => {
+          const next = natal.houses.cusps[(i + 1) % 12]
           let span = next - cusp
           if (span < 0) span += 360
-          const [nx, ny] = polar(R_HOUSE_IN + 9, a + span / 2)
+          const [nx, ny] = polar(R_HOUSE_IN + 8, toScreen(cusp) + span / 2)
           return (
-            <g key={i}>
-              <line x1={x0} y1={y0} x2={x1} y2={y1} stroke={angular ? '#fff4cc' : 'rgba(255,244,204,0.35)'} strokeWidth={angular ? 2 : 1} strokeDasharray={angular ? undefined : '3 3'} />
-              <text x={nx} y={ny} className="wheel__house-num" textAnchor="middle" dominantBaseline="central">{i + 1}</text>
-            </g>
+            <text key={`n${i}`} x={nx} y={ny} className="wheel__house-num" textAnchor="middle" dominantBaseline="central">{i + 1}</text>
           )
         })}
-        <circle cx={C} cy={C} r={R_HOUSE_IN} fill="none" stroke="rgba(255,244,204,0.35)" strokeWidth="1" />
-        <circle cx={C} cy={C} r={R_ASPECT} fill="none" stroke="#05060f" strokeWidth="2" />
-        {/* ASC / MC labels */}
+        <circle cx={C} cy={C} r={R_HOUSE_IN} className="wheel__ring-house" />
+        <circle cx={C} cy={C} r={R_ASPECT} className="wheel__ring-aspect" />
+      </g>
+
+      {/* 3. angles: Ascendant and Midheaven axes */}
+      <g className={`wheel__layer wheel__angles ${on('angles') ? 'is-on' : ''}`}>
         {(['ascendant', 'midheaven'] as const).map((k) => {
           const p = byKey.get(k)
           if (!p) return null
-          const [lx, ly] = polar(R_OUTER + 2, toScreen(p.longitude))
-          const [tx, ty] = polar(R_OUTER - 14, toScreen(p.longitude))
+          const a = toScreen(p.longitude)
+          const [x0, y0] = polar(R_ASPECT, a)
+          const [x1, y1] = polar(R_OUTER, a)
+          const [ox0, oy0] = polar(R_ASPECT, a + 180)
+          const [ox1, oy1] = polar(R_SIGN_IN, a + 180)
+          const [lx, ly] = polar(R_OUTER + 1, a)
+          const [tx, ty] = polar(R_OUTER - 13, a)
           return (
             <g key={k}>
-              <circle cx={lx} cy={ly} r="4" fill="#ffd84d" stroke="#05060f" strokeWidth="1.5" />
+              <line x1={x0} y1={y0} x2={x1} y2={y1} className="wheel__axis" pathLength={1} />
+              <line x1={ox0} y1={oy0} x2={ox1} y2={oy1} className="wheel__axis wheel__axis--opposite" pathLength={1} />
+              <circle cx={lx} cy={ly} r="4" className="wheel__axis-dot" />
               <text x={tx} y={ty} className="wheel__angle-label" textAnchor="middle" dominantBaseline="central">{k === 'ascendant' ? 'AC' : 'MC'}</text>
             </g>
           )
         })}
       </g>
 
-      {/* aspects */}
+      {/* 4. aspects, kept away from the centre */}
       {aspects && (
-        <g opacity={aspectOpacity}>
-          {chart.aspects.map((a, i) => {
+        <g className={`wheel__layer wheel__aspects ${on('aspects') ? 'is-on' : ''}`} mask={centerClear > 0 ? `url(#mask-${uid})` : undefined}>
+          {natal.aspects.map((a, i) => {
             const p = byKey.get(a.a)
             const q = byKey.get(a.b)
             if (!p || !q) return null
@@ -171,37 +206,49 @@ export function NatalWheel({ chart, size = '100%', aspects = true, onSelect, sel
             const [x1, y1] = polar(R_ASPECT - 2, toScreen(q.longitude))
             const dim = selected && a.a !== selected && a.b !== selected
             return (
-              <line key={i} x1={x0} y1={y0} x2={x1} y2={y1} stroke={ASPECT_COLOUR[a.type]} strokeWidth={a.orb < 2 ? 1.6 : 1} opacity={dim ? 0.15 : 1 - a.orb / 12} />
+              <line
+                key={i}
+                x1={x0}
+                y1={y0}
+                x2={x1}
+                y2={y1}
+                stroke={ASPECT_COLOUR[a.type]}
+                strokeWidth={a.orb < 2 ? 1.5 : 1}
+                opacity={dim ? 0.12 : 1 - a.orb / 12}
+                pathLength={1}
+                className="wheel__aspect"
+                style={{ transitionDelay: `${i * 60}ms` }}
+              />
             )
           })}
+          {clearR > 0 && <circle cx={C} cy={C} r={clearR} className="wheel__clear" />}
         </g>
       )}
 
-      {/* planets */}
-      <g opacity={planetOpacity}>
-        {planets.map((pl) => {
+      {/* 5. planets */}
+      <g className={`wheel__layer wheel__planets ${on('planets') ? 'is-on' : ''}`}>
+        {planets.map((pl, i) => {
           const p = byKey.get(pl.key)!
-          const [dx, dy] = polar(R_HOUSE_IN - 3, pl.angle)
           const [px, py] = polar(R_HOUSE_IN - 2, pl.angle)
           const [gx, gy] = polar(R_PLANET, pl.drawAngle)
-          const [tx, ty] = polar(R_HOUSE_IN, pl.angle)
+          const [tx, ty] = polar(R_HOUSE_IN - 1, pl.angle)
           const isSel = selected === pl.key
           return (
             <g
               key={pl.key}
               className={`wheel__planet ${onSelect ? 'wheel__planet--tappable' : ''} ${isSel ? 'is-selected' : ''}`}
+              style={{ transitionDelay: `${i * 90}ms`, transformOrigin: `${gx}px ${gy}px` }}
               onClick={onSelect ? () => onSelect(pl.key) : undefined}
               role={onSelect ? 'button' : undefined}
               tabIndex={onSelect ? 0 : undefined}
               onKeyDown={onSelect ? (e) => { if (e.key === 'Enter' || e.key === ' ') onSelect(pl.key) } : undefined}
             >
-              <line x1={tx} y1={ty} x2={gx} y2={gy} stroke="rgba(255,244,204,0.3)" strokeWidth="1" />
-              <circle cx={px} cy={py} r="2.4" fill="#fff4cc" />
-              <circle cx={dx} cy={dy} r="0" />
-              <circle cx={gx} cy={gy} r="11" className="wheel__planet-bg" />
-              <text x={gx} y={gy + 0.5} className="wheel__planet-glyph" textAnchor="middle" dominantBaseline="central">{p.glyph}</text>
+              <line x1={tx} y1={ty} x2={gx} y2={gy} className="wheel__planet-lead" />
+              <circle cx={px} cy={py} r="2.2" className="wheel__planet-dot" />
+              <circle cx={gx} cy={gy} r="11.5" className="wheel__planet-bg" />
+              <GlyphAt name={p.key} x={gx} y={gy} size={13} stroke="currentColor" strokeWidth={2.2} className="wheel__planet-glyph" />
               {p.retrograde && (
-                <text x={gx + 10} y={gy - 8} className="wheel__retro" textAnchor="middle" dominantBaseline="central">℞</text>
+                <text x={gx + 10.5} y={gy - 8} className="wheel__retro" textAnchor="middle" dominantBaseline="central">R</text>
               )}
             </g>
           )

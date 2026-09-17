@@ -1,5 +1,5 @@
 :root {
-  /* Late-90s celestial toy packaging */
+  /* Late-90s celestial toy packaging, seen on a good modern display */
   --midnight: #070b1f;
   --navy: #0e1638;
   --navy-2: #16204d;
@@ -8,6 +8,7 @@
   --violet-dim: #3b2f66;
   --violet-deep: #241b45;
   --cream: #fff4cc;
+  --ivory: #f3ecd8;
   --cream-dim: #d9cfa4;
   --yellow: #ffd84d;
   --yellow-deep: #e0a800;
@@ -21,24 +22,27 @@
   --chrome-4: #4b5568;
   --ink: #05060f;
 
-  --text: var(--cream);
+  --text: var(--ivory);
   --text-dim: #a9a6c4;
   --text-faint: #6f6c8f;
+  --line: rgba(255, 244, 204, 0.12);
+  --line-strong: rgba(255, 244, 204, 0.22);
+  --surface: rgba(255, 244, 204, 0.035);
+  --surface-2: rgba(255, 244, 204, 0.06);
 
-  --font-display: 'Bungee', 'Impact', 'Arial Black', sans-serif;
-  --font-pixel: 'Silkscreen', 'Courier New', monospace;
-  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Menlo, Consolas, monospace;
-  --font-glyph: 'Noto Sans Symbols', 'Noto Sans Symbols 2', 'Segoe UI Symbol', 'Apple Symbols', 'Symbola', sans-serif;
+  /* Three faces, three jobs */
+  --font-display: 'Bungee', 'Impact', 'Arial Black', sans-serif; /* names, big emotional statements */
+  --font-pixel: 'Silkscreen', 'Courier New', monospace; /* tiny labels, numbers, record ids */
+  --font-ui: 'Space Grotesk', 'Helvetica Neue', Arial, sans-serif; /* everything people read */
+  --font-mono: 'IBM Plex Mono', 'SFMono-Regular', Menlo, Consolas, monospace; /* tables of data */
 
-  --radius: 14px;
-  --radius-sm: 8px;
-  --gutter: 18px;
-  --screen-max: 440px;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --gutter: 24px;
+  --screen-max: 460px;
+  --gap-section: 40px;
+  --touch: 54px;
 
   --ease-out-back: cubic-bezier(0.18, 0.89, 0.32, 1.28);
   --ease-settle: cubic-bezier(0.1, 0.9, 0.2, 1);
-
-  --chrome-gradient: linear-gradient(180deg, var(--chrome-1) 0%, var(--chrome-2) 38%, var(--chrome-3) 62%, var(--chrome-2) 100%);
-  --gold-gradient: linear-gradient(180deg, #fff6c9 0%, var(--yellow) 40%, var(--yellow-deep) 65%, #ffe27a 100%);
-  --violet-gradient: linear-gradient(180deg, #9a86e0 0%, var(--violet) 45%, var(--violet-dim) 100%);
 }

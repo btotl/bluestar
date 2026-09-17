@@ -1,13 +1,14 @@
 .nursery {
-  gap: 14px;
+  gap: 12px;
 }
 
 .nursery__card {
   display: block;
   text-decoration: none;
   color: inherit;
+  padding: 14px 16px;
 }
 
 .nursery__card:active {
-  transform: translateY(3px);
+  background: var(--surface-2);
 }

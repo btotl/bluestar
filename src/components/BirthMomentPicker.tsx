@@ -64,7 +64,7 @@ export function BirthMomentPicker({ value, timeZone, onChange, onClose }: Props)
             </p>
           )}
           <EmbossButton
-            variant="chrome"
+            variant="secondary"
             small
             disabled={!parsed}
             onClick={() => {

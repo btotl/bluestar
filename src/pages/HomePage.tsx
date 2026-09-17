@@ -4,6 +4,7 @@ import { EmbossButton } from '../components/primitives'
 import { Starfield } from '../components/Starfield'
 import { useFurbyStore } from '../store/furbyStore'
 import './HomePage.css'
+import './ProfilePage.css'
 
 export function HomePage() {
   const order = useFurbyStore((s) => s.order)
@@ -24,7 +25,7 @@ export function HomePage() {
           if (!f) return null
           return (
             <li key={id}>
-              <Link to={`/furby/${id}`} className="panel nursery__card">
+              <Link to={`/furby/${id}`} className="card nursery__card">
                 <CosmicIdHeader furby={f} compact />
               </Link>
             </li>

@@ -18,6 +18,7 @@ interface Props {
   onConfirm: () => void
 }
 
+/** The permanence moment. Short, quiet, and the only irreversible tap in the app. */
 export function ConfirmBirthCard({ name, location, moment, portraitId, busy, error, onCancel, onConfirm }: Props) {
   const [now, setNow] = useState(() => new Date())
   useEffect(() => {
@@ -28,40 +29,34 @@ export function ConfirmBirthCard({ name, location, moment, portraitId, busy, err
 
   const when = moment.mode === 'chosen' ? moment.utc : now
   const tz = location.timeZone
-  const regionLine = [location.name, location.region || location.country].filter(Boolean).join(', ')
 
   return (
     <div className="confirm-backdrop" role="presentation">
-      <div className="confirm-card panel panel--chrome rise-in" role="alertdialog" aria-labelledby="confirm-title" aria-modal="true">
-        <div className="confirm-card__warn">
-          <span className="glyph">{"\u26A0\uFE0E"}</span>
-          <h2 id="confirm-title" className="title title--sm">This moment cannot be changed</h2>
+      <div className="confirm-card rise-in" role="alertdialog" aria-labelledby="confirm-title" aria-modal="true">
+        <span className="stripe stripe--center" aria-hidden="true" />
+        <h2 id="confirm-title" className="confirm-card__title">This moment becomes permanent</h2>
+
+        <div className="confirm-card__who">
+          {portraitId && <FurbyPortrait portraitId={portraitId} variant="thumbnail" size={56} alt="" />}
+          <div>
+            <div className="confirm-card__name">{name}</div>
+            <div className="hint">will be born at</div>
+          </div>
         </div>
 
-        <p className="confirm-card__lead">
-          {portraitId && <FurbyPortrait portraitId={portraitId} variant="thumbnail" size={54} className="confirm-card__portrait" alt="" />}
-          <span className="confirm-card__name">{name.toUpperCase()}</span> will be born at
-        </p>
         <div className="confirm-card__time">{formatTime(when, tz)}</div>
         <div className="confirm-card__date">{formatLongDate(when, tz)}</div>
-        {moment.mode === 'moment' && <div className="confirm-card__live">◉ live · stamped the instant you confirm</div>}
-
         <div className="confirm-card__place">
-          <div>{regionLine}</div>
-          <div className="mono dim">{formatCoordinates(location.latitude, location.longitude)}</div>
+          {[location.name, location.region || location.country].filter(Boolean).join(', ')}
+          <span className="confirm-card__coords">{formatCoordinates(location.latitude, location.longitude)}</span>
         </div>
 
-        <p className="confirm-card__note">
-          This moment will permanently determine {name}'s zodiac, planets, houses, ascendant and astrological identity.
-        </p>
-
+        <p className="hint center">Sun, Moon, Rising, every planet and house follow from this instant. It cannot be changed later.</p>
         {error && <p className="confirm-card__error">{error}</p>}
 
         <div className="confirm-card__actions">
-          <EmbossButton variant="ghost" onClick={onCancel} disabled={busy}>Cancel</EmbossButton>
-          <EmbossButton variant="gold" onClick={onConfirm} disabled={busy}>
-            {busy ? 'Sending…' : 'Confirm Birth'}
-          </EmbossButton>
+          <EmbossButton variant="ghost" onClick={onCancel} disabled={busy}>Not yet</EmbossButton>
+          <EmbossButton onClick={onConfirm} disabled={busy}>{busy ? 'Sealing…' : 'Confirm birth'}</EmbossButton>
         </div>
       </div>
     </div>

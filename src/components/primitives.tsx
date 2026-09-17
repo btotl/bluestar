@@ -2,7 +2,7 @@ import type { ButtonHTMLAttributes, CSSProperties, ReactNode } from 'react'
 import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
-/* ---------- Retro panel ---------- */
+/* ---------- Soft card with an optional tiny stripe motif ---------- */
 export function RetroPanel({
   label,
   children,
@@ -15,13 +15,11 @@ export function RetroPanel({
   className?: string
 }) {
   return (
-    <section className={`panel ${chrome ? 'panel--chrome' : ''} ${className}`}>
+    <section className={`card ${chrome ? 'card--glow' : ''} ${className}`}>
       {label && (
-        <header className="panel__head">
-          <span>{label}</span>
-          <span className="panel__head-dots" aria-hidden="true">
-            <i /><i /><i />
-          </span>
+        <header className="section-head">
+          <span className="eyebrow">{label}</span>
+          <span className="stripe" aria-hidden="true" style={{ width: 32 }} />
         </header>
       )}
       {children}
@@ -30,7 +28,7 @@ export function RetroPanel({
 }
 
 /* ---------- Emboss button ---------- */
-type Variant = 'gold' | 'chrome' | 'violet' | 'ghost' | 'text'
+type Variant = 'gold' | 'chrome' | 'violet' | 'ghost' | 'text' | 'secondary'
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: Variant
@@ -59,40 +57,6 @@ export function EmbossButton({ variant = 'gold', ceremonial, small, className = 
   return (
     <button type="button" className={cls} {...rest}>
       {children}
-    </button>
-  )
-}
-
-/* ---------- Medallion ---------- */
-export function Medallion({
-  kind,
-  glyph,
-  label,
-  sign,
-  tagline,
-  onClick,
-  className = '',
-}: {
-  kind: 'sun' | 'moon' | 'rising'
-  glyph: string
-  label: string
-  sign: string
-  tagline: string
-  onClick?: () => void
-  className?: string
-}) {
-  return (
-    <button type="button" className={`medallion ${className}`} onClick={onClick}>
-      <span className={`medallion__coin medallion__coin--${kind}`} aria-hidden="true">
-        <span className="medallion__inner">
-          <span className="medallion__glyph">{glyph}</span>
-        </span>
-      </span>
-      <span>
-        <span className="medallion__label">{glyph} {label}</span>
-        <span className="medallion__sign" style={{ display: 'block' }}>{sign}</span>
-        <span className="medallion__tag">{tagline}</span>
-      </span>
     </button>
   )
 }

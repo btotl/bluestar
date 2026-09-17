@@ -7,10 +7,13 @@ stamps that instant once, forever, and the app casts a full natal chart from it.
 - `#/birth` — the ritual: name → photograph the real Furby (on-device cutout)
   → sleeping Furby → permanence warning → birth animation → Big Three reveal
   → certificate number
-- `#/furby/:id/certificate` — natal wheel, Sun/Moon/Rising medallions,
-  Furby-flavoured planet interpretations, and the real numbers underneath
-- `#/furby/:id` and `/settings` — Cosmic ID header, editable name and owner,
-  locked Birth Record
+- `#/furby/:id/reveal` — the emotional reveal: name, sun sign, Sun · Moon · Rising
+- `#/furby/:id/certificate` — the permanent record as a collectible
+- `#/furby/:id/chart` — the full natal wheel with Placements, Houses, Aspects
+- `#/furby/:id` and `/settings` — profile, editable name and owner, locked Birth Record
+
+Everything astrological derives from one immutable `BirthRecord`
+(`src/birth/birthRecord.ts`), created once when the server confirms the Birth.
 
 Read [`docs/birth-flow.md`](docs/birth-flow.md) for the refined brief, the
 backend contract and the chart maths, and

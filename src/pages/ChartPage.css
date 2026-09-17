@@ -1,0 +1,37 @@
+.chart__wheel {
+  position: relative;
+  width: 100%;
+  max-width: 420px;
+  margin: -6px auto 0;
+  aspect-ratio: 1;
+}
+
+.chart__furby {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.chart__line {
+  margin: -8px 0 0;
+  text-align: center;
+  font-family: var(--font-ui);
+  font-size: 15px;
+  color: var(--ivory);
+}
+
+.chart__cast {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding-top: 16px;
+  border-top: 1px solid var(--line);
+}
+
+.chart__cast-line {
+  font-size: 9.5px;
+  letter-spacing: 0.12em;
+  color: var(--text-dim);
+}

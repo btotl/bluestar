@@ -1,0 +1,74 @@
+.profile__hero {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.profile__id {
+  font-size: 10px;
+  color: var(--text-dim);
+}
+
+.profile__born {
+  font-family: var(--font-ui);
+  font-size: 15px;
+  color: var(--ivory);
+  line-height: 1.5;
+}
+
+.profile__chips {
+  margin-top: 6px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.profile__trait {
+  font-family: var(--font-ui);
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--yellow);
+  margin-bottom: 6px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Cosmic ID header (nursery cards) */
+.cosmic-id {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.cosmic-id__name {
+  font-family: var(--font-display);
+  font-size: clamp(20px, 6vw, 26px);
+  color: var(--cream);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.cosmic-id__line {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  color: var(--ivory);
+  margin-top: 6px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  align-items: center;
+}
+
+.cosmic-id__line .glyph-svg {
+  color: var(--yellow);
+}
+
+.cosmic-id__born {
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  letter-spacing: 0.16em;
+  color: var(--text-faint);
+  margin-top: 5px;
+}
