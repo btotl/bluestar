@@ -1,6 +1,7 @@
 import type { BirthApi, BirthRecord, BirthRequest } from './types'
 
 const SEQ_KEY = 'bluestar.birth.sequence'
+const REQUESTS_KEY = 'bluestar.birth.requests'
 
 function newId(): string {
   if (typeof crypto !== 'undefined' && 'randomUUID' in crypto) return crypto.randomUUID()
@@ -37,16 +38,43 @@ export class LocalBirthServer implements BirthApi {
     return seq
   }
 
+  private readRequests(): Record<string, BirthRecord> {
+    try {
+      return JSON.parse(localStorage.getItem(REQUESTS_KEY) ?? '{}') as Record<string, BirthRecord>
+    } catch {
+      return {}
+    }
+  }
+
+  private remember(id: string, record: BirthRecord): void {
+    try {
+      const all = this.readRequests()
+      all[id] = record
+      // Keep the map small; only recent requests can plausibly be retried.
+      const keys = Object.keys(all)
+      for (const k of keys.slice(0, Math.max(0, keys.length - 20))) delete all[k]
+      localStorage.setItem(REQUESTS_KEY, JSON.stringify(all))
+    } catch {
+      /* ignore */
+    }
+  }
+
   async confirmBirth(request: BirthRequest): Promise<BirthRecord> {
     // Simulate the request travelling to the server.
     await new Promise((r) => setTimeout(r, this.latencyMs))
+    // Same client request id → same birth. Never two Furbys from one tap.
+    const existing = request.clientRequestId ? this.readRequests()[request.clientRequestId] : undefined
+    if (existing) return existing
     const receivedAt = new Date()
     const name = request.name.trim()
     if (!name) throw new Error('A Furby needs a name before it can be born.')
+    if (request.requestedMomentUtc && new Date(request.requestedMomentUtc).getTime() > receivedAt.getTime()) {
+      throw new Error('A Furby cannot be born in the future.')
+    }
     const timestampUtc = request.requestedMomentUtc
       ? new Date(request.requestedMomentUtc).toISOString()
       : receivedAt.toISOString()
-    return {
+    const record: BirthRecord = {
       furbyId: newId(),
       certificateNumber: this.nextCertificateNumber(),
       name,
@@ -54,7 +82,10 @@ export class LocalBirthServer implements BirthApi {
       mode: request.requestedMomentUtc ? 'chosen' : 'moment',
       location: { ...request.location },
       recordedAtUtc: receivedAt.toISOString(),
+      birthPortraitId: request.birthPortraitId,
     }
+    if (request.clientRequestId) this.remember(request.clientRequestId, record)
+    return record
   }
 }
 

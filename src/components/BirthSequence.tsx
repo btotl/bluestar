@@ -2,7 +2,7 @@ import { useEffect, useMemo, useState } from 'react'
 import { SIGN_BY_KEY } from '../astro/signs'
 import { formatTime } from '../lib/time'
 import { formatCertificateNumber, type Furby } from '../store/furbyStore'
-import { FurbySprite } from './FurbySprite'
+import { FurbyPortrait } from './FurbyPortrait'
 import { NatalWheel } from './NatalWheel'
 import { EmbossButton } from './primitives'
 import { Starfield } from './Starfield'
@@ -113,7 +113,17 @@ export function BirthSequence({ furby, onDone }: Props) {
         </svg>
 
         <div className={`birth__furby ${at('constellation') ? 'is-visible' : ''}`}>
-          <FurbySprite eyes={at('awake') ? 'open' : 'closed'} lit={at('awake')} size={150} animate={at('awake')} />
+          <FurbyPortrait
+            furby={furby}
+            variant="birth"
+            size={156}
+            decorative={false}
+            asleep={!at('awake')}
+            lit={at('awake')}
+            float={at('awake')}
+            eyes={at('awake') ? 'open' : 'closed'}
+            animate={at('awake')}
+          />
         </div>
       </div>
 

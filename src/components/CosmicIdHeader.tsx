@@ -1,14 +1,14 @@
 import { SIGN_BY_KEY } from '../astro/signs'
 import { formatDotDate } from '../lib/time'
 import type { Furby } from '../store/furbyStore'
-import { FurbySprite } from './FurbySprite'
+import { FurbyPortrait } from './FurbyPortrait'
 
 export function CosmicIdHeader({ furby, compact = false }: { furby: Furby; compact?: boolean }) {
   const { sun, moon, rising } = furby.chart.bigThree
   const born = new Date(furby.birth.timestampUtc)
   return (
     <div className="cosmic-id">
-      <FurbySprite eyes="open" size={compact ? 64 : 88} animate={false} />
+      <FurbyPortrait furby={furby} variant={compact ? 'thumbnail' : 'profile'} size={compact ? 64 : 100} eyes="open" animate={false} />
       <div>
         <div className="cosmic-id__name">{furby.name}</div>
         <div className="cosmic-id__line">

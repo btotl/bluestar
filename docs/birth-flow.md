@@ -17,10 +17,12 @@ account setup. The one rule that matters more than anything else:
 The first-time flow is:
 
 ```
-Unborn Furby → Name → Location → "Use this moment"
+Unborn Furby → Name → Show us your Furby (birth portrait) → Location → "Use this moment"
   → Permanence warning → Birth animation → Big Three reveal
   → Full Birth Certificate → Furby profile
 ```
+
+The portrait step is described in [birth-portrait.md](birth-portrait.md).
 
 ### Screens
 

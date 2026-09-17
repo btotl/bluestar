@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { BirthRecord } from '../api/types'
 import type { NatalChart } from '../astro/types'
+import type { PortraitRef } from '../portrait/types'
 
 export interface Furby {
   id: string
@@ -13,6 +14,13 @@ export interface Furby {
   /** Derived from birth; cached so the certificate renders instantly. */
   readonly chart: Readonly<NatalChart>
   createdAtUtc: string
+  /**
+   * The Birth Portrait, if one was taken. Optional so Furbys born before
+   * portraits existed keep working and fall back to the drawn sprite.
+   */
+  readonly birthPortraitId?: string
+  /** All portraits, oldest first. The birth portrait is locked and never replaced. */
+  portraits?: PortraitRef[]
 }
 
 interface FurbyState {
@@ -23,6 +31,8 @@ interface FurbyState {
   setOwner: (id: string, owner: string) => void
   /** Removes the local copy only; the birth record persists on the server. */
   forgetFurby: (id: string) => void
+  /** Adds a later portrait. A second 'birth' portrait is refused. */
+  addPortrait: (id: string, ref: PortraitRef) => void
 }
 
 function deepFreeze<T>(value: T): T {
@@ -56,6 +66,14 @@ export const useFurbyStore = create<FurbyState>()(
           const f = s.furbys[id]
           if (!f) return s
           return { furbys: { ...s.furbys, [id]: { ...f, owner: owner.trim() } } }
+        }),
+      addPortrait: (id, ref) =>
+        set((s) => {
+          const f = s.furbys[id]
+          if (!f) return s
+          if (ref.kind === 'birth' && f.birthPortraitId) return s
+          const portraits = [...(f.portraits ?? []), ref]
+          return { furbys: { ...s.furbys, [id]: { ...f, portraits } } }
         }),
       forgetFurby: (id) =>
         set((s) => {

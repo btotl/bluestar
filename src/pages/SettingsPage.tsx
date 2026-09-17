@@ -2,7 +2,9 @@ import { useState } from 'react'
 import { Navigate, useNavigate, useParams } from 'react-router-dom'
 import { formatCoordinates, formatPlacement } from '../astro/format'
 import { SIGN_BY_KEY } from '../astro/signs'
+import { FurbyPortrait } from '../components/FurbyPortrait'
 import { EmbossButton, LockedField, Padlock, RetroPanel } from '../components/primitives'
+import { deletePortrait, forgetPortraitUrls } from '../portrait/portraitDb'
 import { Starfield } from '../components/Starfield'
 import { formatLongDate, formatTime, formatUtcOffset } from '../lib/time'
 import { formatCertificateNumber, useFurby, useFurbyStore } from '../store/furbyStore'
@@ -57,6 +59,23 @@ export function SettingsPage() {
       </RetroPanel>
 
       <RetroPanel label="Birth record" chrome>
+        <LockedField
+          label="Birth portrait"
+          value={
+            furby.birthPortraitId ? (
+              <span className="row" style={{ alignItems: 'center' }}>
+                <FurbyPortrait furby={furby} variant="thumbnail" size={72} />
+                <span style={{ fontSize: 12, color: 'var(--text-dim)', fontWeight: 400 }}>
+                  Taken at birth{furby.portraits?.[0]?.uncut ? ' · kept uncut' : ''}
+                  <br />
+                  {furby.portraits?.[0] ? `${furby.portraits[0].width}×${furby.portraits[0].height}` : ''}
+                </span>
+              </span>
+            ) : (
+              <span className="faint" style={{ fontWeight: 400 }}>None taken. This Furby wears the drawn portrait.</span>
+            )
+          }
+        />
         <LockedField label="Name at birth" value={birth.name} />
         <LockedField label="Certificate" value={`FURBY ${formatCertificateNumber(birth.certificateNumber)}`} />
         <LockedField label="Born at" value={formatTime(bornAt, tz)} sub={`${formatLongDate(bornAt, tz)} · ${formatUtcOffset(bornAt, tz)}`} />
@@ -98,6 +117,10 @@ export function SettingsPage() {
               <EmbossButton
                 variant="violet"
                 onClick={() => {
+                  for (const ref of furby.portraits ?? []) {
+                    forgetPortraitUrls(ref.id)
+                    void deletePortrait(ref.id)
+                  }
                   forget(furby.id)
                   navigate('/', { replace: true })
                 }}

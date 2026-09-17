@@ -103,3 +103,15 @@
   grid-template-columns: 1fr 1.5fr;
   gap: 10px;
 }
+
+.confirm-card__lead {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.confirm-card__portrait {
+  margin: -6px 0;
+}

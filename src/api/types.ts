@@ -20,6 +20,14 @@ export interface BirthRequest {
    * birth time for an existing Furby.
    */
   requestedMomentUtc?: string
+  /** Id of the approved Birth Portrait asset, if one was taken. */
+  birthPortraitId?: string
+  /**
+   * Generated once when the confirmation card opens. The server treats a
+   * repeated id as the same birth, so a double tap or a retry after a lost
+   * response cannot create two Furbys.
+   */
+  clientRequestId: string
 }
 
 export interface BirthRecord {
@@ -33,6 +41,7 @@ export interface BirthRecord {
   location: BirthLocation
   /** When the server wrote the record (equals timestampUtc for mode 'moment'). */
   recordedAtUtc: string
+  birthPortraitId?: string
 }
 
 export interface BirthApi {

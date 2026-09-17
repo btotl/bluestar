@@ -4,7 +4,7 @@ import { formatCoordinates, formatDegree, formatPlacement, ordinalHouse } from '
 import { BIG_THREE_TAGLINES, interpret } from '../astro/interpretations'
 import { SIGN_BY_KEY, SIGNS } from '../astro/signs'
 import type { PointKey } from '../astro/types'
-import { FurbySprite } from '../components/FurbySprite'
+import { FurbyPortrait } from '../components/FurbyPortrait'
 import { NatalWheel } from '../components/NatalWheel'
 import { PlanetSheet } from '../components/PlanetSheet'
 import { EmbossButton, Medallion, RetroPanel } from '../components/primitives'
@@ -43,7 +43,7 @@ export function CertificatePage() {
       <div className={`cert__portrait ${justBorn ? 'pop-in' : ''}`}>
         <NatalWheel chart={chart} aspects={false} />
         <div className="cert__portrait-furby">
-          <FurbySprite eyes="open" lit size={112} />
+          <FurbyPortrait furby={furby} variant="celestial" size={124} lit eyes="open" />
         </div>
       </div>
 

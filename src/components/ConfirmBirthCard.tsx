@@ -3,6 +3,7 @@ import type { BirthLocation } from '../api/types'
 import { formatCoordinates } from '../astro/format'
 import { formatLongDate, formatTime } from '../lib/time'
 import type { MomentChoice } from './BirthMomentPicker'
+import { FurbyPortrait } from './FurbyPortrait'
 import { EmbossButton } from './primitives'
 import './ConfirmBirthCard.css'
 
@@ -10,13 +11,14 @@ interface Props {
   name: string
   location: BirthLocation
   moment: MomentChoice
+  portraitId?: string
   busy: boolean
   error?: string | null
   onCancel: () => void
   onConfirm: () => void
 }
 
-export function ConfirmBirthCard({ name, location, moment, busy, error, onCancel, onConfirm }: Props) {
+export function ConfirmBirthCard({ name, location, moment, portraitId, busy, error, onCancel, onConfirm }: Props) {
   const [now, setNow] = useState(() => new Date())
   useEffect(() => {
     if (moment.mode !== 'moment') return
@@ -37,6 +39,7 @@ export function ConfirmBirthCard({ name, location, moment, busy, error, onCancel
         </div>
 
         <p className="confirm-card__lead">
+          {portraitId && <FurbyPortrait portraitId={portraitId} variant="thumbnail" size={54} className="confirm-card__portrait" alt="" />}
           <span className="confirm-card__name">{name.toUpperCase()}</span> will be born at
         </p>
         <div className="confirm-card__time">{formatTime(when, tz)}</div>
