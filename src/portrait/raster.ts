@@ -123,3 +123,84 @@ export function looksImperfect(r: Raster): boolean {
   // A clean cutout has a thin edge band; more than ~35% edge is mushy.
   return edge / (solid + edge) > 0.35 || solid / (width * height) < 0.02
 }
+
+/**
+ * Keep only the alpha regions that belong to the Furby. Segmentation models
+ * leave faint islands where a shadow or a blurred object confused them; those
+ * are disconnected from the main body. Everything attached to the largest
+ * component (ears, feet, tufts) survives; islands smaller than `minFraction`
+ * of the largest one are cleared. Operates in place; returns components kept.
+ */
+export function keepMainComponents(r: Raster, threshold = 40, minFraction = 0.02): number {
+  const { width, height, data } = r
+  const n = width * height
+  const label = new Int32Array(n) // 0 = unvisited/background, else component id
+  const sizes: number[] = [0]
+  const stack = new Int32Array(n)
+  let next = 1
+  for (let start = 0; start < n; start++) {
+    if (label[start] !== 0 || data[start * 4 + 3] <= threshold) continue
+    const id = next++
+    let size = 0
+    let sp = 0
+    stack[sp++] = start
+    label[start] = id
+    while (sp > 0) {
+      const p = stack[--sp]
+      size++
+      const x = p % width
+      const y = (p - x) / width
+      const tryPush = (q: number) => {
+        if (label[q] === 0 && data[q * 4 + 3] > threshold) {
+          label[q] = id
+          stack[sp++] = q
+        }
+      }
+      if (x > 0) tryPush(p - 1)
+      if (x < width - 1) tryPush(p + 1)
+      if (y > 0) tryPush(p - width)
+      if (y < height - 1) tryPush(p + width)
+    }
+    sizes.push(size)
+  }
+  if (sizes.length <= 1) return 0
+  const largest = Math.max(...sizes)
+  const keep = new Uint8Array(sizes.length)
+  let kept = 0
+  for (let id = 1; id < sizes.length; id++) {
+    if (sizes[id] >= largest * minFraction) {
+      keep[id] = 1
+      kept++
+    }
+  }
+  // Clear islands entirely, and clear faint alpha (≤ threshold) that touches nothing kept.
+  for (let p = 0; p < n; p++) {
+    const id = label[p]
+    if (id !== 0 && keep[id]) continue
+    const a = data[p * 4 + 3]
+    if (a === 0) continue
+    if (id !== 0) {
+      data[p * 4 + 3] = 0
+      continue
+    }
+    // Faint pixel: keep only if a kept component is within 2 px (soft fur edge).
+    const x = p % width
+    const y = (p - x) / width
+    let near = false
+    for (let dy = -2; dy <= 2 && !near; dy++) {
+      const yy = y + dy
+      if (yy < 0 || yy >= height) continue
+      for (let dx = -2; dx <= 2; dx++) {
+        const xx = x + dx
+        if (xx < 0 || xx >= width) continue
+        const q = label[yy * width + xx]
+        if (q !== 0 && keep[q]) {
+          near = true
+          break
+        }
+      }
+    }
+    if (!near) data[p * 4 + 3] = 0
+  }
+  return kept
+}

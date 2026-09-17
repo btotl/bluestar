@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { alphaBounds, cleanAlpha, coverage, defringe, looksImperfect, padBox, type Raster } from '../raster'
+import { alphaBounds, cleanAlpha, coverage, defringe, keepMainComponents, looksImperfect, padBox, type Raster } from '../raster'
 
 function raster(width: number, height: number, fill: (x: number, y: number) => [number, number, number, number]): Raster {
   const data = new Uint8ClampedArray(width * height * 4)
@@ -51,5 +51,34 @@ describe('raster helpers', () => {
     expect(looksImperfect(crisp)).toBe(false)
     const mushy = raster(20, 20, (x, y) => [0, 0, 0, (x + y) % 3 === 0 ? 255 : 90])
     expect(looksImperfect(mushy)).toBe(true)
+  })
+
+  it('keeps the body with attached ears and drops disconnected faint islands', () => {
+    // 40x40: a 16x16 body at (10,10), a 4x6 "ear" touching its top, a 2x2 island at (32,32)
+    // and a faint smear (alpha 30) at (2..6, 20..30) away from everything.
+    const r = raster(40, 40, (x, y) => {
+      const body = x >= 10 && x < 26 && y >= 10 && y < 26
+      const ear = x >= 12 && x < 16 && y >= 4 && y < 10
+      const island = x >= 32 && x < 34 && y >= 32 && y < 34
+      const smear = x >= 2 && x < 7 && y >= 20 && y < 31
+      return [0, 0, 0, body || ear ? 255 : island ? 255 : smear ? 30 : 0]
+    })
+    const kept = keepMainComponents(r)
+    expect(kept).toBe(1)
+    const a = (x: number, y: number) => r.data[(y * 40 + x) * 4 + 3]
+    expect(a(15, 15)).toBe(255) // body
+    expect(a(13, 5)).toBe(255) // ear stays attached
+    expect(a(33, 33)).toBe(0) // island gone
+    expect(a(4, 25)).toBe(0) // smear gone
+  })
+
+  it('keeps faint fur pixels that hug the body edge', () => {
+    const r = raster(20, 20, (x, y) => {
+      const body = x >= 5 && x < 15 && y >= 5 && y < 15
+      const fuzz = x === 4 && y >= 5 && y < 15 // 1 px soft edge left of the body
+      return [0, 0, 0, body ? 255 : fuzz ? 25 : 0]
+    })
+    keepMainComponents(r)
+    expect(r.data[(10 * 20 + 4) * 4 + 3]).toBe(25)
   })
 })
