@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { alphaBounds, cleanAlpha, coverage, defringe, keepMainComponents, looksImperfect, padBox, type Raster } from '../raster'
+import { alphaBounds, cleanAlpha, coverage, defringe, keepMainComponents, looksImperfect, looksLikeNothing, padBox, type Raster } from '../raster'
 
 function raster(width: number, height: number, fill: (x: number, y: number) => [number, number, number, number]): Raster {
   const data = new Uint8ClampedArray(width * height * 4)
@@ -80,5 +80,17 @@ describe('raster helpers', () => {
     })
     keepMainComponents(r)
     expect(r.data[(10 * 20 + 4) * 4 + 3]).toBe(25)
+  })
+
+  it('calls a frame-filling cloud of half-alpha noise nothing, and a solid shape something', () => {
+    const cloud = raster(40, 40, (x, y) => [0, 0, 0, (x * 7 + y * 13) % 5 === 0 ? 255 : 60 + ((x + y) % 90)])
+    expect(looksLikeNothing(cloud)).toBe(true)
+    // Solid furry blob with a soft 2 px rim, not touching the frame edges.
+    const furby = raster(60, 60, (x, y) => {
+      const d = Math.hypot(x - 30, y - 30)
+      return [0, 0, 0, d < 20 ? 255 : d < 22 ? 120 : 0]
+    })
+    expect(looksLikeNothing(furby)).toBe(false)
+    expect(looksLikeNothing(raster(10, 10, () => [0, 0, 0, 0]))).toBe(true)
   })
 })

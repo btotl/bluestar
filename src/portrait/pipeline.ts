@@ -10,7 +10,7 @@ import {
   rasterToCanvas,
   resizeCanvas,
 } from './imageUtils'
-import { alphaBounds, cleanAlpha, coverage, defringe, keepMainComponents, looksImperfect, padBox } from './raster'
+import { alphaBounds, cleanAlpha, coverage, defringe, keepMainComponents, looksImperfect, looksLikeNothing, padBox } from './raster'
 import { PortraitNotFoundError, type PortraitAsset, type PortraitProcessor, type ProcessResult, type ProgressFn } from './types'
 
 function newId(): string {
@@ -65,6 +65,7 @@ export async function processCapture(file: Blob, processor: PortraitProcessor, o
     cleanAlpha(raster)
     cov = coverage(raster)
     if (cov < MIN_COVERAGE || cov > MAX_COVERAGE) throw new PortraitNotFoundError(cov)
+    if (looksLikeNothing(raster)) throw new PortraitNotFoundError(cov)
     // Drop faint islands (shadows, blurred objects) that are not attached to the Furby.
     keepMainComponents(raster)
     defringe(raster)

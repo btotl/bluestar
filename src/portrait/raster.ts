@@ -109,6 +109,30 @@ export function defringe(r: Raster, radius = 2, solid = 200): void {
   r.data.set(out)
 }
 
+/**
+ * "There is no Furby here." A plain wall or table makes the model emit a
+ * frame-sized cloud of half-transparent noise rather than a solid shape.
+ * Mostly-mushy alpha, or a mushy region that fills the whole frame, means
+ * nothing was found.
+ */
+export function looksLikeNothing(r: Raster): boolean {
+  const { width, height, data } = r
+  let solid = 0
+  let edge = 0
+  for (let i = 3; i < data.length; i += 4) {
+    const a = data[i]
+    if (a >= 250) solid++
+    else if (a > 5) edge++
+  }
+  if (solid + edge === 0) return true
+  const mush = edge / (solid + edge)
+  if (mush > 0.55) return true
+  const b = alphaBounds(r, 5)
+  if (!b) return true
+  const fillsFrame = b.width >= width * 0.97 && b.height >= height * 0.97
+  return fillsFrame && mush > 0.3
+}
+
 /** Rough "is this alpha rough?" heuristic: many isolated semi-transparent islands. */
 export function looksImperfect(r: Raster): boolean {
   const { width, height, data } = r
