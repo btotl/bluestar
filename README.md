@@ -36,6 +36,11 @@ npm run build      # static output in dist/ (hash routing, host anywhere)
 branch. One-time setup: repository Settings → Pages → Source: **GitHub
 Actions**. Because the app uses hash routing, no rewrites are needed.
 
+`npm run build:single` writes `dist-single/index.html`, one self-contained
+file (all scripts and styles inlined; the portrait model still loads from
+img.ly's CDN). Drop it on https://app.netlify.com/drop or any static host
+for an instant URL.
+
 Set `VITE_BIRTH_API_URL=https://your-birth-service` to use a real birth
 service instead of the built-in local stand-in.
 

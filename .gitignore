@@ -25,3 +25,5 @@ dist-ssr
 
 # local artifact build for the claude.ai page host
 dist-artifact
+
+dist-single
