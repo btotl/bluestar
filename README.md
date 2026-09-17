@@ -33,8 +33,10 @@ npm run build      # static output in dist/ (hash routing, host anywhere)
 
 `.github/workflows/pages.yml` builds and publishes to GitHub Pages at
 `https://btotl.github.io/bluestar/` on every push to `main` or a `claude/*`
-branch. One-time setup: repository Settings → Pages → Source: **GitHub
-Actions**. Because the app uses hash routing, no rewrites are needed.
+branch. The repository is public, so Pages is free; the workflow enables the
+Pages site on its first successful run (or set Settings → Pages → Source to
+**GitHub Actions** by hand). Because the app uses hash routing, no rewrites
+are needed.
 
 `npm run build:single` writes `dist-single/index.html`, one self-contained
 file (all scripts and styles inlined; the portrait model still loads from
