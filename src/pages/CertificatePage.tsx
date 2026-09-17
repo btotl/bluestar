@@ -5,6 +5,7 @@ import { SIGN_BY_KEY } from '../astro/signs'
 import { placeLine } from '../birth/birthRecord'
 import { BigThree } from '../components/BigThree'
 import { FurbyPortrait } from '../components/FurbyPortrait'
+import { Ornament } from '../components/Ornament'
 import { EmbossButton, Padlock } from '../components/primitives'
 import { CelestialBackdrop } from '../components/CelestialBackdrop'
 import { formatLongDate, formatTime, formatUtcOffset } from '../lib/time'
@@ -29,10 +30,12 @@ export function CertificatePage() {
       </div>
 
       <article className="cert">
-        <div className="cert__corner cert__corner--tl">✦</div>
-        <div className="cert__corner cert__corner--tr">✦</div>
-        <div className="cert__corner cert__corner--bl">✦</div>
-        <div className="cert__corner cert__corner--br">✦</div>
+        <Ornament name="corner" width={54} className="cert__corner cert__corner--tl" />
+        <Ornament name="corner" width={54} rotate={90} className="cert__corner cert__corner--tr" />
+        <Ornament name="corner" width={54} rotate={270} className="cert__corner cert__corner--bl" />
+        <Ornament name="corner" width={54} rotate={180} className="cert__corner cert__corner--br" />
+        <Ornament name="sideSigils" tone="line" width={16} className="cert__sigils cert__sigils--l" />
+        <Ornament name="sideSigils" tone="line" width={16} className="cert__sigils cert__sigils--r" />
 
         <header className="cert__head">
           <span className="stripe stripe--center" aria-hidden="true" />
@@ -40,7 +43,10 @@ export function CertificatePage() {
           <div className="cert__number">Furby {formatCertificateNumber(b.certificateNumber)}</div>
         </header>
 
-        <FurbyPortrait furby={furby} variant="certificate" size={170} eyes="open" animate={false} className="cert__portrait" />
+        <div className="cert__arch">
+          <Ornament name="archFrame" className="cert__arch-frame" />
+          <FurbyPortrait furby={furby} variant="celestial" decorative={false} size={150} eyes="open" animate={false} className="cert__portrait" />
+        </div>
 
         <h1 className="cert__name">{b.furbyName}</h1>
         <div className="cert__under">
@@ -54,21 +60,12 @@ export function CertificatePage() {
           <div><dt>Sky</dt><dd className="pixel cert__coords">{formatCoordinates(b.latitude, b.longitude)}</dd></div>
         </dl>
 
+        <Ornament name="templeDivider" tone="line" className="cert__divider" />
         <BigThree record={b} className="cert__big-three" />
 
         <footer className="cert__seal-row">
           <div className="cert__seal" aria-label="Sealed">
-            <svg viewBox="0 0 100 100" width="84" height="84" aria-hidden="true">
-              <defs>
-                <path id={`seal-arc-${b.id}`} d="M50 50 m-36 0 a36 36 0 1 1 72 0 a36 36 0 1 1 -72 0" />
-              </defs>
-              <circle cx="50" cy="50" r="46" fill="none" stroke="currentColor" strokeWidth="1.2" strokeDasharray="2 3" />
-              <circle cx="50" cy="50" r="27" fill="none" stroke="currentColor" strokeWidth="1" />
-              <text fontSize="8.2" fontFamily="Silkscreen, monospace" letterSpacing="1.6" fill="currentColor">
-                <textPath href={`#seal-arc-${b.id}`} startOffset="2%">THE SKY REMEMBERS · SEALED ·</textPath>
-              </text>
-              <path d="M50 36 l3.5 9.5 9.5 3.5 -9.5 3.5 -3.5 9.5 -3.5 -9.5 -9.5 -3.5 9.5 -3.5z" fill="currentColor" />
-            </svg>
+            <Ornament name="waxSeal" width={84} title="Sealed" />
           </div>
           <div className="cert__seal-text">
             <div className="cert__sealed">Sealed {formatLongDate(new Date(b.recordedAtUtc), b.timeZone)}</div>

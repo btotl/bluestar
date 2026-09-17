@@ -5,6 +5,7 @@ import { SIGN_BY_KEY } from '../astro/signs'
 import { bigThree } from '../birth/birthRecord'
 import { BigThree } from '../components/BigThree'
 import { FurbyPortrait } from '../components/FurbyPortrait'
+import { Ornament } from '../components/Ornament'
 import { Chip, EmbossButton } from '../components/primitives'
 import { CelestialBackdrop } from '../components/CelestialBackdrop'
 import { formatDotDate, formatTime } from '../lib/time'
@@ -50,6 +51,8 @@ export function ProfilePage() {
       </header>
 
       <BigThree record={b} />
+
+      <Ornament name="templeDivider" tone="line" className="profile__divider" />
 
       <section className="card">
         <div className="section-head"><span className="eyebrow">Temperament</span><span className="stripe" style={{ width: 32 }} /></div>

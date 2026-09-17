@@ -47,6 +47,17 @@ single class change. The natal wheel underneath is a proper chart: sign ring,
 Placidus cusps, planet glyphs with collision spreading, aspect lines coloured
 by harmony.
 
+### Ornaments
+
+`src/assets/ornaments/` holds the ancient-celestial SVG pack (corner
+ornaments, arch frame, sun disc, lunar phases, orbital halo, constellation,
+meander, rosette, seal, stars, dividers, sigils). `Ornament` inlines them so
+`currentColor` follows the UI palette. They are used sparingly: the
+certificate's corners, arch, seal, divider and side sigils; the orbital halo
+behind the celestial portrait; the sun disc behind the sun sign on the Reveal;
+the lunar phases under the chart title; a divider on the profile; the rosette
+above the nursery; the four-point star above "A new Furby awaits".
+
 ### Language
 
 Every interpretation is written about a toy's behaviour, never a person:

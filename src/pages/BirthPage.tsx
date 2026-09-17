@@ -10,6 +10,7 @@ import { ConfirmBirthCard } from '../components/ConfirmBirthCard'
 import { FurbyPortrait } from '../components/FurbyPortrait'
 import { LocationPicker } from '../components/LocationPicker'
 import { PortraitCapture } from '../components/portrait/PortraitCapture'
+import { Ornament } from '../components/Ornament'
 import { EmbossButton } from '../components/primitives'
 import { CelestialBackdrop } from '../components/CelestialBackdrop'
 import { DEFAULT_PLACE_ID, findPlace } from '../data/places'
@@ -178,7 +179,7 @@ export function BirthPage() {
       {/* 1. The Furby. Nothing on this screen outweighs it. */}
       <section className="birth__hero">
         <div className="birth__intro">
-          <span className="birth__star" aria-hidden="true">✦</span>
+          <Ornament name="fourStar" width={18} className="birth__star" />
           <h1 className="title title--xl">A new Furby<br />awaits</h1>
           <p className="lead dim">The stars will remember the moment it wakes.</p>
         </div>

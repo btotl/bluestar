@@ -24,6 +24,11 @@
   justify-content: center;
 }
 
+.profile__divider {
+  width: 70%;
+  margin: -14px auto -14px;
+}
+
 .profile__trait {
   font-family: var(--font-ui);
   font-weight: 600;

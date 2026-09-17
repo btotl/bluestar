@@ -1,5 +1,6 @@
 import { Link, Navigate } from 'react-router-dom'
 import { CosmicIdHeader } from '../components/CosmicIdHeader'
+import { Ornament } from '../components/Ornament'
 import { EmbossButton } from '../components/primitives'
 import { CelestialBackdrop } from '../components/CelestialBackdrop'
 import { useFurbyStore } from '../store/furbyStore'
@@ -15,6 +16,7 @@ export function HomePage() {
     <div className="screen">
       <CelestialBackdrop density={0.5} />
       <header className="center" style={{ paddingTop: 8 }}>
+        <Ornament name="rosette" width={52} style={{ marginBottom: 6 }} />
         <div className="eyebrow">Bluestar</div>
         <h1 className="title title--lg stars-title">The nursery</h1>
       </header>

@@ -3,6 +3,7 @@ import { motion } from 'motion/react'
 import { usePortraitUrl } from '../portrait/usePortraitUrl'
 import type { PortraitRef, PortraitSize } from '../portrait/types'
 import { FurbySprite, type EyeState } from './FurbySprite'
+import { Ornament } from './Ornament'
 import './FurbyPortrait.css'
 
 export type PortraitVariant = 'profile' | 'birth' | 'certificate' | 'celestial' | 'thumbnail'
@@ -119,11 +120,7 @@ export function FurbyPortrait({
       {deco && (
         <div className="fp__deco" aria-hidden="true">
           <div className="fp__halo" />
-          {(variant === 'celestial' || variant === 'birth') && (
-            <div className="fp__orbit">
-              <i /><i /><i /><i /><i /><i />
-            </div>
-          )}
+          {(variant === 'celestial' || variant === 'birth') && <Ornament name="orbitalHalo" tone="line" className="fp__orbit" />}
           {variant === 'certificate' && (
             <div className="fp__frame-deco">
               <span className="fp__corner fp__corner--tl">✦</span>

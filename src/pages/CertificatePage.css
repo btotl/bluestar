@@ -19,15 +19,49 @@
 
 .cert__corner {
   position: absolute;
-  color: var(--yellow);
-  font-size: 13px;
-  text-shadow: 0 0 8px rgba(255, 216, 77, 0.7);
+  opacity: 0.9;
+  filter: drop-shadow(0 0 4px rgba(255, 216, 77, 0.35));
 }
 
-.cert__corner--tl { top: 10px; left: 12px; }
-.cert__corner--tr { top: 10px; right: 12px; }
-.cert__corner--bl { bottom: 10px; left: 12px; }
-.cert__corner--br { bottom: 10px; right: 12px; }
+.cert__corner--tl { top: 9px; left: 9px; }
+.cert__corner--tr { top: 9px; right: 9px; }
+.cert__corner--bl { bottom: 9px; left: 9px; }
+.cert__corner--br { bottom: 9px; right: 9px; }
+
+.cert__sigils {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  opacity: 0.35;
+}
+
+.cert__sigils--l { left: 6px; }
+.cert__sigils--r { right: 6px; }
+
+.cert__arch {
+  position: relative;
+  width: 186px;
+  aspect-ratio: 360 / 420;
+  display: grid;
+  place-items: end center;
+  margin: 8px 0 0;
+}
+
+.cert__arch-frame {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  filter: drop-shadow(0 0 6px rgba(255, 216, 77, 0.25));
+}
+
+.cert__arch .cert__portrait {
+  margin-bottom: 8px;
+}
+
+.cert__divider {
+  width: 78%;
+  margin: 2px auto -4px;
+}
 
 .cert__head {
   display: flex;
@@ -51,9 +85,6 @@
   color: var(--text-dim);
 }
 
-.cert__portrait {
-  margin: 6px 0 2px;
-}
 
 .cert__name {
   margin: 4px 0 0;

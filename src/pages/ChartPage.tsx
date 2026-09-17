@@ -10,6 +10,7 @@ import { bigThree, placement } from '../birth/birthRecord'
 import { NatalChart, type ChartSelection } from '../chart/NatalChart'
 import { CelestialBackdrop } from '../components/CelestialBackdrop'
 import { FurbyPortrait } from '../components/FurbyPortrait'
+import { Ornament } from '../components/Ornament'
 import { EmbossButton } from '../components/primitives'
 import { detectQuality } from '../lib/quality'
 import { formatTime, tzAbbreviation } from '../lib/time'
@@ -41,8 +42,9 @@ export function ChartPage() {
         <span className="eyebrow">Natal chart</span>
       </div>
 
-      <header className="center">
+      <header className="center chart__head">
         <h1 className="title title--lg">{furby.name}'s natal chart</h1>
+        <Ornament name="lunarPhases" tone="line" width={210} className="chart__phases" />
       </header>
 
       <div className="chart__wheel">

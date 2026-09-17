@@ -1,0 +1,27 @@
+.ornament {
+  display: inline-block;
+  line-height: 0;
+  pointer-events: none;
+  flex: none;
+}
+
+.ornament svg {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+
+/* Gold linework, secondary line, faint texture: the pack's own guidance */
+.ornament--gold {
+  color: #f2c84b;
+}
+
+.ornament--line {
+  color: #7c83a8;
+  opacity: 0.55;
+}
+
+.ornament--faint {
+  color: #f2c84b;
+  opacity: 0.28;
+}

@@ -20,9 +20,7 @@
 }
 
 .birth__star {
-  color: var(--yellow);
-  font-size: 18px;
-  text-shadow: 0 0 14px rgba(255, 216, 77, 0.8);
+  filter: drop-shadow(0 0 8px rgba(255, 216, 77, 0.8));
 }
 
 .birth__intro .lead {

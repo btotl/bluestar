@@ -3,6 +3,7 @@ import { Glyph } from '../astro/glyphs'
 import { SIGN_BY_KEY } from '../astro/signs'
 import { BigThree } from '../components/BigThree'
 import { FurbyPortrait } from '../components/FurbyPortrait'
+import { Ornament } from '../components/Ornament'
 import { EmbossButton } from '../components/primitives'
 import { CelestialBackdrop } from '../components/CelestialBackdrop'
 import { useFurby } from '../store/furbyStore'
@@ -23,7 +24,10 @@ export function RevealPage() {
         <FurbyPortrait furby={furby} layoutId="furby-portrait" variant="celestial" size={230} lit alive eyes="open" />
         <h1 className="title title--lg rise-in delay-1">{furby.name} has been born</h1>
         <div className="reveal__sign rise-in delay-2">
-          <Glyph name={sun.key} size={44} strokeWidth={1.6} />
+          <span className="reveal__disc">
+            <Ornament name="sunDisc" tone="faint" width={124} className="reveal__disc-art" />
+            <Glyph name={sun.key} size={44} strokeWidth={1.6} />
+          </span>
           <div className="reveal__under">Born under {sun.name}</div>
         </div>
         <BigThree record={furby.birth} className="rise-in delay-3" />

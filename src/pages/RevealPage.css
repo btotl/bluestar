@@ -14,6 +14,20 @@
   color: var(--yellow);
 }
 
+.reveal__disc {
+  position: relative;
+  width: 124px;
+  height: 124px;
+  display: grid;
+  place-items: center;
+}
+
+.reveal__disc-art {
+  position: absolute;
+  inset: 0;
+  animation: fp-orbit 120s linear infinite;
+}
+
 .reveal__under {
   font-family: var(--font-ui);
   font-size: 16px;
