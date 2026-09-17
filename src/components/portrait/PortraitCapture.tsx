@@ -69,11 +69,21 @@ export function PortraitCapture({ furbyName, onDone, onSkip, onCancel }: Props) 
     if (videoRef.current) videoRef.current.srcObject = null
   }, [])
 
-  useEffect(() => () => {
-    stopCamera()
-    abortRef.current?.abort()
-    if (sourceUrl) URL.revokeObjectURL(sourceUrl)
-  }, [stopCamera, sourceUrl])
+  const sourceUrlRef = useRef<string | null>(null)
+  useEffect(() => {
+    sourceUrlRef.current = sourceUrl
+  }, [sourceUrl])
+
+  // Unmount only: stop the camera, cancel any in-flight processing, free the preview URL.
+  // (This must not depend on sourceUrl, or every new preview would abort its own processing.)
+  useEffect(
+    () => () => {
+      stopCamera()
+      abortRef.current?.abort()
+      if (sourceUrlRef.current) URL.revokeObjectURL(sourceUrlRef.current)
+    },
+    [stopCamera],
+  )
 
   const startCamera = useCallback(async (mode: 'environment' | 'user') => {
     stopCamera()

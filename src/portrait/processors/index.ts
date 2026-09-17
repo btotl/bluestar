@@ -22,7 +22,12 @@ export function createPortraitProcessor(): PortraitProcessor {
     return new HttpProcessor(url)
   }
   const model = env.VITE_PORTRAIT_MODEL as 'isnet' | 'isnet_fp16' | 'isnet_quint8' | undefined
-  return new ImglyProcessor({ model, publicPath: env.VITE_PORTRAIT_ASSETS as string | undefined })
+  return new ImglyProcessor({
+    model,
+    publicPath: env.VITE_PORTRAIT_ASSETS as string | undefined,
+    proxyToWorker: env.VITE_PORTRAIT_WORKER === 'true',
+    debug: env.VITE_PORTRAIT_DEBUG === 'true',
+  })
 }
 
 export const portraitProcessor: PortraitProcessor = createPortraitProcessor()

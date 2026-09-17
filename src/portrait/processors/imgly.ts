@@ -7,6 +7,9 @@ export interface ImglyOptions {
   publicPath?: string
   model?: 'isnet' | 'isnet_fp16' | 'isnet_quint8'
   device?: 'cpu' | 'gpu'
+  /** Run inference in a Web Worker. Off by default: the worker bundle is fragile under some bundlers. */
+  proxyToWorker?: boolean
+  debug?: boolean
 }
 
 /**
@@ -37,11 +40,24 @@ export class ImglyProcessor implements PortraitProcessor {
     return this.mod
   }
 
+  /** The library requires an absolute URL; allow "/portrait-assets/" style self-hosting. */
+  private publicPath(): string | undefined {
+    const p = this.options.publicPath
+    if (!p) return undefined
+    try {
+      return new URL(p, typeof location !== 'undefined' ? location.href : undefined).href
+    } catch {
+      return p
+    }
+  }
+
   private config(onProgress?: ProgressFn) {
     return {
-      publicPath: this.options.publicPath,
+      publicPath: this.publicPath(),
       model: this.options.model ?? 'isnet_fp16',
       device: this.options.device ?? 'cpu',
+      proxyToWorker: this.options.proxyToWorker ?? false,
+      debug: this.options.debug ?? false,
       output: { format: 'image/png' as const, quality: 1 },
       progress: (key: string, current: number, total: number) => {
         if (!onProgress) return

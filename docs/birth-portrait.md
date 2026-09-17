@@ -55,9 +55,25 @@ Selection is one env var:
 
 | `VITE_PORTRAIT_PROCESSOR` | Provider | Notes |
 | --- | --- | --- |
-| `imgly` (default) | On-device, ONNX Runtime Web | Photo never leaves the phone. First use downloads the ~80 MB `isnet_fp16` model (or ~40 MB `isnet_quint8` via `VITE_PORTRAIT_MODEL`); the browser caches it. Self-host the model files with `VITE_PORTRAIT_ASSETS`. |
+| `imgly` (default) | On-device, ONNX Runtime Web | Photo never leaves the phone. First use downloads the ~80 MB `isnet_fp16` model (or ~40 MB `isnet_quint8` via `VITE_PORTRAIT_MODEL`); the browser caches it. Self-host the model files with `VITE_PORTRAIT_ASSETS` (absolute URL or a path such as `/portrait-assets/`). |
 | `http` | `POST {VITE_PORTRAIT_API_URL}/api/portraits/segment` | Body is the image; response is a PNG with alpha. The service must not keep uploads. |
 | `none` | Passthrough | No cutout at all; only for environments without a model. |
+
+Two more switches for the on-device provider: `VITE_PORTRAIT_WORKER=true`
+runs inference in a Web Worker (off by default; the worker bundle is fragile
+under some bundlers and the main-thread path was the one verified here) and
+`VITE_PORTRAIT_DEBUG=true` logs the library's progress. Inference is
+single-threaded unless the page is cross-origin isolated
+(`Cross-Origin-Opener-Policy: same-origin` and
+`Cross-Origin-Embedder-Policy: require-corp`); with those headers ONNX Runtime
+uses several threads and the cutout takes a few seconds instead of ten to
+twenty.
+
+**Self-hosting the model.** Mirror `resources.json` and the chunk files it
+lists for your model and the two wasm builds from
+`https://staticimgly.com/@imgly/background-removal-data/1.7.0/dist/` into a
+folder served next to the app, then build with
+`VITE_PORTRAIT_ASSETS=/portrait-assets/`. About 76 MB for `isnet_quint8`.
 
 **Licence note.** `@imgly/background-removal` is AGPL-3.0. That is fine for a
 personal project, but publishing the app means offering its source under a
@@ -123,10 +139,12 @@ birth service is a follow-up (`PUT /api/furbys/:id/portraits/:portraitId`).
 ## Tested
 
 - Unit: raster helpers, local birth server idempotency and future-time refusal.
-- Headless Chromium at 390×844: synthetic Furby photo through the real
-  on-device IS-Net model, review, refresh mid-birth, double-tap confirm, the
-  full sequence, certificate, profile, settings, and the failure path with a
-  blank photo followed by "use the photo uncut".
+- Headless Chromium at 390×844 with the model self-hosted (the sandbox's
+  proxy could not serve the CDN to the browser): a synthetic Furby photo and
+  a real 1998 Furby photo through the on-device IS-Net model, review, refresh
+  mid-birth, double-tap confirm, the full sequence, certificate, profile,
+  settings, and the failure path with a blank photo followed by "use the
+  photo uncut".
 - Not yet run on a physical iPhone: Safari camera capture, HEIC files and WebP
   encoding fall back by design (file input with `capture`, `<img>` decode,
   PNG), but need a device check.
