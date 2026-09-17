@@ -28,7 +28,8 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: npm test -- --run
+      - run: npm run typecheck
+      - run: npm test
       - name: Build
         # Hash routing, so the site needs no rewrites. The on-device portrait
         # model loads from img.ly's CDN at run time (see docs/birth-portrait.md).
