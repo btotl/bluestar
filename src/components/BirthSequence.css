@@ -1,0 +1,252 @@
+.birth {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  background: #000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+  padding: calc(env(safe-area-inset-top, 0px) + 12px) var(--gutter) calc(env(safe-area-inset-bottom, 0px) + 20px);
+  transition: background 900ms ease;
+}
+
+.birth--constellation,
+.birth--wheel,
+.birth--awake,
+.birth--born,
+.birth--sun,
+.birth--moon,
+.birth--rising,
+.birth--cert {
+  background: var(--midnight);
+}
+
+/* the frozen timestamp */
+.birth__freeze {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  background: var(--midnight);
+  transition: opacity 400ms ease;
+  z-index: 3;
+}
+
+.birth__freeze.is-gone {
+  opacity: 0;
+  pointer-events: none;
+}
+
+.birth__freeze-label {
+  font-family: var(--font-pixel);
+  font-size: 11px;
+  letter-spacing: 0.2em;
+  text-transform: uppercase;
+  color: var(--text-dim);
+  animation: fade-in 300ms ease both;
+}
+
+.birth__freeze-time {
+  font-family: var(--font-display);
+  font-size: clamp(38px, 12vw, 52px);
+  color: var(--yellow);
+  font-variant-numeric: tabular-nums;
+  text-shadow: 0 3px 0 var(--ink), 0 0 30px rgba(255, 216, 77, 0.5);
+  animation: freeze-lock 700ms var(--ease-settle) both;
+}
+
+@keyframes freeze-lock {
+  0% { transform: scale(1.15); letter-spacing: 0.1em; opacity: 0.4; }
+  60% { transform: scale(0.98); letter-spacing: 0.02em; opacity: 1; }
+  100% { transform: scale(1); letter-spacing: 0.02em; }
+}
+
+/* stage */
+.birth__stage {
+  position: relative;
+  width: min(86vw, 360px);
+  aspect-ratio: 1;
+  margin-top: 6vh;
+  opacity: 0;
+  transition: opacity 600ms ease;
+}
+
+.birth__stage.is-visible {
+  opacity: 1;
+}
+
+.birth__wheel {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  transform: rotate(1080deg) scale(0.6);
+}
+
+.birth__wheel.is-spinning {
+  opacity: 1;
+  transform: rotate(0deg) scale(1);
+  transition:
+    transform 2400ms cubic-bezier(0.1, 0.8, 0.15, 1),
+    opacity 900ms ease;
+}
+
+.birth__constellation {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  z-index: 2;
+}
+
+.birth__constellation-line {
+  fill: none;
+  stroke: rgba(255, 244, 204, 0.75);
+  stroke-width: 1.2;
+  stroke-linecap: round;
+  stroke-dasharray: 1400;
+  stroke-dashoffset: 1400;
+}
+
+.birth__constellation-line.is-drawing {
+  animation: draw-line 1500ms ease-out 350ms forwards;
+}
+
+@keyframes draw-line {
+  to { stroke-dashoffset: 0; }
+}
+
+.birth--awake .birth__constellation-line,
+.birth--born .birth__constellation-line,
+.birth--sun .birth__constellation-line,
+.birth--moon .birth__constellation-line,
+.birth--rising .birth__constellation-line,
+.birth--cert .birth__constellation-line {
+  opacity: 0.35;
+  transition: opacity 1s ease;
+}
+
+.birth__cstar {
+  opacity: 0;
+  transform-origin: center;
+}
+
+.birth__cstar.is-on {
+  animation: star-pop 500ms var(--ease-out-back) both;
+}
+
+@keyframes star-pop {
+  0% { opacity: 0; transform: scale(0.2); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.birth__first-star {
+  opacity: 0;
+  transform-box: fill-box;
+  transform-origin: center;
+}
+
+.birth__first-star.is-on {
+  animation: first-star 700ms ease-out both;
+}
+
+.birth__first-star.is-dim {
+  opacity: 0.3;
+  animation: none;
+}
+
+@keyframes first-star {
+  0% { opacity: 0; transform: scale(0.2); }
+  50% { opacity: 1; transform: scale(3); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.birth__furby {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  z-index: 3;
+  opacity: 0;
+  transition: opacity 900ms ease;
+}
+
+.birth__furby.is-visible {
+  opacity: 1;
+}
+
+.birth--constellation .birth__furby {
+  opacity: 0.35;
+}
+
+/* reveals */
+.birth__reveals {
+  margin-top: 18px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  min-height: 190px;
+  text-align: center;
+  width: 100%;
+}
+
+.birth__born {
+  font-family: var(--font-display);
+  font-size: clamp(16px, 5.2vw, 20px);
+  color: var(--cream);
+  text-shadow: 0 2px 0 var(--violet-deep);
+  letter-spacing: 0.06em;
+}
+
+.birth__sun {
+  font-family: var(--font-display);
+  font-size: clamp(30px, 10vw, 40px);
+  color: var(--yellow);
+  text-shadow: 0 3px 0 var(--ink), 0 0 26px rgba(255, 216, 77, 0.5);
+  line-height: 1;
+}
+
+.birth__sun .glyph {
+  font-size: 0.9em;
+}
+
+.birth__minor {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.birth__minor-line {
+  font-family: var(--font-mono);
+  font-weight: 600;
+  font-size: 16px;
+  color: var(--cream-dim);
+}
+
+.birth__minor-line .glyph {
+  color: var(--yellow);
+}
+
+.birth__cert {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  margin-top: 6px;
+}
+
+.birth__cert-no {
+  font-family: var(--font-pixel);
+  font-size: 12px;
+  letter-spacing: 0.22em;
+  color: var(--chrome-2);
+  padding: 6px 12px;
+  border: 2px solid var(--chrome-3);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 2px 0 var(--ink);
+}

@@ -1,0 +1,13 @@
+.nursery {
+  gap: 14px;
+}
+
+.nursery__card {
+  display: block;
+  text-decoration: none;
+  color: inherit;
+}
+
+.nursery__card:active {
+  transform: translateY(3px);
+}

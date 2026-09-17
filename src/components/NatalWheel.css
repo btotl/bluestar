@@ -1,0 +1,69 @@
+.wheel {
+  display: block;
+  max-width: 100%;
+  height: auto;
+  filter: drop-shadow(0 6px 0 #05060f) drop-shadow(0 14px 28px rgba(0, 0, 0, 0.55));
+}
+
+.wheel__sign-glyph {
+  font-family: var(--font-glyph);
+  font-size: 17px;
+  fill: #fff4cc;
+}
+
+.wheel__house-num {
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  fill: rgba(255, 244, 204, 0.55);
+}
+
+.wheel__angle-label {
+  font-family: var(--font-pixel);
+  font-size: 8px;
+  fill: #ffd84d;
+}
+
+.wheel__planet-bg {
+  fill: #0e1638;
+  stroke: #c3ccd9;
+  stroke-width: 1.5;
+  transition: fill 150ms ease, stroke 150ms ease, r 150ms ease;
+}
+
+.wheel__planet-glyph {
+  font-family: var(--font-glyph);
+  font-size: 14px;
+  fill: #fff4cc;
+  pointer-events: none;
+}
+
+.wheel__retro {
+  font-family: var(--font-mono);
+  font-size: 7px;
+  fill: #ff9a3c;
+  pointer-events: none;
+}
+
+.wheel__planet--tappable {
+  cursor: pointer;
+}
+
+.wheel__planet--tappable:hover .wheel__planet-bg,
+.wheel__planet.is-selected .wheel__planet-bg {
+  fill: #ffd84d;
+  stroke: #05060f;
+}
+
+.wheel__planet.is-selected .wheel__planet-glyph,
+.wheel__planet--tappable:hover .wheel__planet-glyph {
+  fill: #05060f;
+}
+
+.wheel__planet:focus {
+  outline: none;
+}
+
+.wheel__planet:focus-visible .wheel__planet-bg {
+  stroke: #ffd84d;
+  stroke-width: 3;
+}

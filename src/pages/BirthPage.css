@@ -1,0 +1,44 @@
+.birth-page {
+  overflow: hidden;
+  transition: background 700ms ease;
+}
+
+.birth-page--confirming {
+  background: #03040c;
+}
+
+.birth-page__nav {
+  margin-bottom: -8px;
+}
+
+.birth-page__header {
+  text-align: center;
+  padding-top: 8px;
+  transition: opacity 500ms ease;
+}
+
+.birth-page__hero {
+  min-height: 210px;
+  transition: transform 700ms var(--ease-settle);
+}
+
+.birth-page--confirming .birth-page__hero {
+  transform: translateY(-6px) scale(1.04);
+}
+
+.birth-page--confirming .birth-page__header,
+.birth-page--confirming .birth-page__panel,
+.birth-page--confirming .birth-page__cta {
+  opacity: 0.25;
+  filter: saturate(0.5);
+  transition: opacity 600ms ease, filter 600ms ease;
+}
+
+.birth-page__cta {
+  margin-top: auto;
+  padding-top: 6px;
+}
+
+.birth-page__cta .subcopy {
+  margin-top: 14px;
+}

@@ -1,0 +1,74 @@
+.cert__top {
+  padding-top: 4px;
+}
+
+.cert__portrait {
+  position: relative;
+  width: min(78vw, 320px);
+  margin: 0 auto;
+}
+
+.cert__portrait-furby {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  pointer-events: none;
+}
+
+.cert__identity {
+  text-align: center;
+  margin-top: -6px;
+}
+
+.cert__under {
+  font-family: var(--font-display);
+  font-size: 15px;
+  color: var(--yellow);
+  letter-spacing: 0.08em;
+  margin-top: 6px;
+}
+
+.cert__under .glyph {
+  font-size: 1.1em;
+}
+
+.cert__when {
+  margin-top: 8px;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--cream);
+}
+
+.cert__where {
+  margin-top: 4px;
+  font-size: 10px;
+  color: var(--text-dim);
+  letter-spacing: 0.16em;
+}
+
+.cert__wheel-wrap {
+  width: 100%;
+  max-width: 360px;
+  margin: 4px auto 0;
+}
+
+.cert__legend {
+  display: flex;
+  justify-content: center;
+  gap: 14px;
+  margin-top: 8px;
+  font-family: var(--font-pixel);
+  font-size: 9px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.cert__legend i {
+  display: inline-block;
+  width: 14px;
+  height: 3px;
+  margin-right: 5px;
+  vertical-align: middle;
+}
