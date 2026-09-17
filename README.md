@@ -29,6 +29,13 @@ npm test           # chart engine + time zone tests
 npm run build      # static output in dist/ (hash routing, host anywhere)
 ```
 
+## Deploy
+
+`.github/workflows/pages.yml` builds and publishes to GitHub Pages at
+`https://btotl.github.io/bluestar/` on every push to `main` or a `claude/*`
+branch. One-time setup: repository Settings → Pages → Source: **GitHub
+Actions**. Because the app uses hash routing, no rewrites are needed.
+
 Set `VITE_BIRTH_API_URL=https://your-birth-service` to use a real birth
 service instead of the built-in local stand-in.
 

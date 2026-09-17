@@ -22,3 +22,6 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+
+# local artifact build for the claude.ai page host
+dist-artifact
