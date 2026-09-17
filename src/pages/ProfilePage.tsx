@@ -6,7 +6,7 @@ import { bigThree } from '../birth/birthRecord'
 import { BigThree } from '../components/BigThree'
 import { FurbyPortrait } from '../components/FurbyPortrait'
 import { Chip, EmbossButton } from '../components/primitives'
-import { Starfield } from '../components/Starfield'
+import { CelestialBackdrop } from '../components/CelestialBackdrop'
 import { formatDotDate, formatTime } from '../lib/time'
 import { formatCertificateNumber, useFurby } from '../store/furbyStore'
 import './ProfilePage.css'
@@ -28,14 +28,14 @@ export function ProfilePage() {
 
   return (
     <div className="screen screen--tight">
-      <Starfield density={0.6} />
+      <CelestialBackdrop density={0.5} />
       <div className="topbar">
         <EmbossButton to="/" variant="text" className="dim">← Nursery</EmbossButton>
         <EmbossButton to={`/furby/${furby.id}/settings`} variant="text" className="dim">Settings</EmbossButton>
       </div>
 
       <header className="profile__hero">
-        <FurbyPortrait furby={furby} variant="celestial" size={210} eyes="open" float />
+        <FurbyPortrait furby={furby} layoutId="furby-portrait" variant="celestial" size={210} eyes="open" alive />
         <h1 className="title title--xl">{furby.name}</h1>
         <div className="profile__id pixel">Furby {formatCertificateNumber(b.certificateNumber)}</div>
         <div className="profile__born">

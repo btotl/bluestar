@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import { FurbyPortrait } from '../FurbyPortrait'
 import { EmbossButton } from '../primitives'
-import { Starfield } from '../Starfield'
+import { CelestialBackdrop } from '../CelestialBackdrop'
 import { captureVideoFrame } from '../../portrait/imageUtils'
 import { processCapture } from '../../portrait/pipeline'
 import { primePortraitUrl } from '../../portrait/portraitDb'
@@ -196,7 +196,7 @@ export function PortraitCapture({ furbyName, onDone, onSkip, onCancel }: Props) 
   if (step === 'intro') {
     return (
       <div className="screen pc">
-        <Starfield density={0.8} />
+        <CelestialBackdrop density={0.5} />
         <div className="row row--between">
           <button type="button" className="btn btn--text" onClick={onCancel}>← Back</button>
           <span className="eyebrow">Birth portrait</span>
@@ -208,7 +208,7 @@ export function PortraitCapture({ furbyName, onDone, onSkip, onCancel }: Props) 
 
         <div className="pc__viewport card">
           <div className="pc__viewport-inner">
-            <Starfield density={1.2} />
+            <CelestialBackdrop density={0.5} />
             <GuideOutline className="pc__guide pc__guide--intro" />
             <div className="pc__viewport-label pixel">{furbyName || 'Your Furby'} goes here</div>
           </div>
@@ -267,7 +267,7 @@ export function PortraitCapture({ furbyName, onDone, onSkip, onCancel }: Props) 
     const pct = stage === 'finding' && fraction > 0 && fraction < 1 ? ` ${Math.round(fraction * 100)}%` : ''
     return (
       <div className="screen pc screen--center">
-        <Starfield density={1.2} />
+        <CelestialBackdrop density={0.5} />
         <div className="pc__processing">
           <div className="pc__orbit-stage">
             <div className="pc__orbit-ring pc__orbit-ring--a"><i /><i /><i /></div>
@@ -287,7 +287,7 @@ export function PortraitCapture({ furbyName, onDone, onSkip, onCancel }: Props) 
   if (step === 'review' && result) {
     return (
       <div className="screen pc">
-        <Starfield density={1.1} />
+        <CelestialBackdrop density={0.5} />
         <div className="row row--between">
           <button type="button" className="btn btn--text" onClick={() => setStep('intro')}>✕</button>
           <span className="eyebrow">Birth portrait</span>
@@ -316,7 +316,7 @@ export function PortraitCapture({ furbyName, onDone, onSkip, onCancel }: Props) 
   // error
   return (
     <div className="screen pc screen--center">
-      <Starfield density={0.9} />
+      <CelestialBackdrop density={0.5} />
       <div className="pc__error">
         <FurbyPortrait variant="celestial" size={140} eyes="closed" animate={false} decorative alt="" />
         <h1 className="title title--lg center">We couldn't quite find your Furby</h1>

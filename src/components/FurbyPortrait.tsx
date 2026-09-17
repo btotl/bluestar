@@ -1,7 +1,7 @@
 import type { CSSProperties } from 'react'
+import { motion } from 'motion/react'
 import { usePortraitUrl } from '../portrait/usePortraitUrl'
-import type { PortraitSize } from '../portrait/types'
-import type { PortraitRef } from '../portrait/types'
+import type { PortraitRef, PortraitSize } from '../portrait/types'
 import { FurbySprite, type EyeState } from './FurbySprite'
 import './FurbyPortrait.css'
 
@@ -24,11 +24,15 @@ interface Props {
   asleep?: boolean
   /** Bright, with a one-off light sweep across the fur. */
   lit?: boolean
+  /** Barely-there breathing: 3 px rise and ±0.3° over several seconds. Never deforms the photo. */
+  alive?: boolean
   /** Draw the halo / orbit / frame behind the Furby. Defaults on for celestial & certificate. */
   decorative?: boolean
   /** Eye state for the fallback sprite (no portrait yet). */
   eyes?: EyeState
   animate?: boolean
+  /** Shared-element id so the same portrait travels between screens. */
+  layoutId?: string
   alt?: string
   className?: string
   style?: CSSProperties
@@ -42,8 +46,7 @@ function sizeFor(variant: PortraitVariant, size: number | string): PortraitSize 
 
 /**
  * The one way to show a Furby. Renders the real photographed portrait when the
- * Furby has one and falls back to the drawn sprite otherwise, so every screen
- * works for Furbys born before portraits existed.
+ * Furby has one and falls back to the drawn sprite otherwise.
  */
 export function FurbyPortrait({
   furby,
@@ -56,9 +59,11 @@ export function FurbyPortrait({
   float,
   asleep,
   lit,
+  alive,
   decorative,
   eyes,
   animate = true,
+  layoutId,
   alt,
   className = '',
   style,
@@ -89,8 +94,28 @@ export function FurbyPortrait({
   const cssSize = typeof size === 'number' ? `${size}px` : size
   const mask = url ? { WebkitMaskImage: `url("${url}")`, maskImage: `url("${url}")` } : undefined
 
+  const stage = (
+    <>
+      {url ? (
+        <>
+          <img className="fp__img" src={url} alt={alt ?? (furby ? `${furby.name}'s birth portrait` : 'Furby portrait')} draggable={false} />
+          {lit && <div className="fp__sweep" style={mask} />}
+        </>
+      ) : loading ? (
+        <div className="fp__placeholder" />
+      ) : (
+        <FurbySprite eyes={eyeState} lit={lit} animate={animate} size="100%" className="fp__sprite" title={alt ?? 'Furby'} />
+      )}
+      {asleep && (
+        <div className="fp__zzz" aria-hidden="true">
+          <span>z</span><span>z</span><span>z</span>
+        </div>
+      )}
+    </>
+  )
+
   return (
-    <div className={cls} style={{ ...style, ['--fp-size' as string]: cssSize }}>
+    <motion.div className={cls} style={{ ...style, ['--fp-size' as string]: cssSize }} layoutId={layoutId} layout={layoutId ? true : undefined} transition={layoutId ? { layout: { duration: 0.9, ease: [0.2, 0.8, 0.2, 1] } } : undefined}>
       {deco && (
         <div className="fp__deco" aria-hidden="true">
           <div className="fp__halo" />
@@ -109,23 +134,13 @@ export function FurbyPortrait({
           )}
         </div>
       )}
-      <div className="fp__stage">
-        {url ? (
-          <>
-            <img className="fp__img" src={url} alt={alt ?? (furby ? `${furby.name}'s birth portrait` : 'Furby portrait')} draggable={false} />
-            {lit && <div className="fp__sweep" style={mask} />}
-          </>
-        ) : loading ? (
-          <div className="fp__placeholder" />
-        ) : (
-          <FurbySprite eyes={eyeState} lit={lit} animate={animate} size="100%" className="fp__sprite" title={alt ?? 'Furby'} />
-        )}
-        {asleep && (
-          <div className="fp__zzz" aria-hidden="true">
-            <span>z</span><span>z</span><span>z</span>
-          </div>
-        )}
-      </div>
-    </div>
+      {alive ? (
+        <motion.div className="fp__stage" animate={{ y: [0, -3, 0], rotate: [-0.3, 0.3, -0.3] }} transition={{ duration: 6, repeat: Infinity, ease: 'easeInOut' }}>
+          {stage}
+        </motion.div>
+      ) : (
+        <div className="fp__stage">{stage}</div>
+      )}
+    </motion.div>
   )
 }

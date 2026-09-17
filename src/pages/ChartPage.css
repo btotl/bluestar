@@ -35,3 +35,27 @@
   letter-spacing: 0.12em;
   color: var(--text-dim);
 }
+
+.chart__focus {
+  padding: 16px 18px 18px;
+}
+
+.chart__focus-aspects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 12px;
+}
+
+.chart__focus-aspects .chip {
+  cursor: pointer;
+  text-transform: none;
+  font-family: var(--font-ui);
+  font-size: 13px;
+  letter-spacing: 0;
+}
+
+.planet-row.is-active,
+.data-table tr.is-active td {
+  background: rgba(255, 216, 77, 0.06);
+}

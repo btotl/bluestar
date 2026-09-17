@@ -1,7 +1,7 @@
 import { Link, Navigate } from 'react-router-dom'
 import { CosmicIdHeader } from '../components/CosmicIdHeader'
 import { EmbossButton } from '../components/primitives'
-import { Starfield } from '../components/Starfield'
+import { CelestialBackdrop } from '../components/CelestialBackdrop'
 import { useFurbyStore } from '../store/furbyStore'
 import './HomePage.css'
 import './ProfilePage.css'
@@ -13,7 +13,7 @@ export function HomePage() {
 
   return (
     <div className="screen">
-      <Starfield density={0.7} />
+      <CelestialBackdrop density={0.5} />
       <header className="center" style={{ paddingTop: 8 }}>
         <div className="eyebrow">Bluestar</div>
         <h1 className="title title--lg stars-title">The nursery</h1>

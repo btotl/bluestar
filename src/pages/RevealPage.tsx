@@ -4,7 +4,7 @@ import { SIGN_BY_KEY } from '../astro/signs'
 import { BigThree } from '../components/BigThree'
 import { FurbyPortrait } from '../components/FurbyPortrait'
 import { EmbossButton } from '../components/primitives'
-import { Starfield } from '../components/Starfield'
+import { CelestialBackdrop } from '../components/CelestialBackdrop'
 import { useFurby } from '../store/furbyStore'
 import './RevealPage.css'
 
@@ -18,9 +18,9 @@ export function RevealPage() {
 
   return (
     <div className="screen screen--center reveal">
-      <Starfield density={1.1} />
+      <CelestialBackdrop density={0.9} />
       <div className="reveal__body">
-        <FurbyPortrait furby={furby} variant="celestial" size={230} lit float eyes="open" className="pop-in" />
+        <FurbyPortrait furby={furby} layoutId="furby-portrait" variant="celestial" size={230} lit alive eyes="open" />
         <h1 className="title title--lg rise-in delay-1">{furby.name} has been born</h1>
         <div className="reveal__sign rise-in delay-2">
           <Glyph name={sun.key} size={44} strokeWidth={1.6} />

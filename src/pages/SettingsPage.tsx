@@ -6,7 +6,7 @@ import { SIGN_BY_KEY } from '../astro/signs'
 import { bigThree, placeLine } from '../birth/birthRecord'
 import { FurbyPortrait } from '../components/FurbyPortrait'
 import { EmbossButton, LockedField, Padlock, RetroPanel } from '../components/primitives'
-import { Starfield } from '../components/Starfield'
+import { CelestialBackdrop } from '../components/CelestialBackdrop'
 import { formatLongDate, formatTime, formatUtcOffset } from '../lib/time'
 import { deletePortrait, forgetPortraitUrls } from '../portrait/portraitDb'
 import { formatCertificateNumber, useFurby, useFurbyStore } from '../store/furbyStore'
@@ -30,7 +30,7 @@ export function SettingsPage() {
 
   return (
     <div className="screen screen--tight">
-      <Starfield density={0.5} />
+      <CelestialBackdrop density={0.4} />
       <div className="topbar">
         <EmbossButton to={`/furby/${furby.id}`} variant="text" className="dim">← {furby.name}</EmbossButton>
         <span className="eyebrow">Settings</span>

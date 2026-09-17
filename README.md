@@ -40,5 +40,7 @@ uncut.
 ## Stack
 
 Vite · React 19 · TypeScript · react-router (hash) · zustand (persisted) ·
-astronomy-engine · vitest. No UI framework: the late-90s celestial toy look is
-hand-written CSS in `src/styles/`.
+astronomy-engine · Motion for React · Three.js (optional, lazy atmosphere) ·
+vitest. No UI framework: the late-90s celestial toy look is hand-written CSS
+in `src/styles/`. See [`docs/birth-cinematic.md`](docs/birth-cinematic.md)
+for the chart and Birth animation architecture.

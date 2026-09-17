@@ -1,0 +1,47 @@
+.backdrop {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 0;
+  --bd-bright: 1;
+}
+
+.backdrop--fixed {
+  position: fixed;
+}
+
+.backdrop__layer {
+  position: absolute;
+  inset: -4%;
+  background-repeat: no-repeat;
+  opacity: calc(0.75 * var(--bd-bright));
+  transition: opacity 1200ms ease;
+}
+
+.backdrop__layer--near {
+  opacity: calc(0.9 * var(--bd-bright));
+}
+
+.backdrop__spark {
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  background: #fff4cc;
+  transform: rotate(45deg) scale(0.8);
+  box-shadow: 0 0 6px rgba(255, 244, 204, 0.8);
+  opacity: 0.3;
+  animation: backdrop-spark 4.2s ease-in-out infinite;
+}
+
+@keyframes backdrop-spark {
+  0%, 100% { opacity: 0.25; transform: rotate(45deg) scale(0.8); }
+  50% { opacity: calc(0.9 * var(--bd-bright)); transform: rotate(45deg) scale(1.1); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .backdrop__spark {
+    animation: none;
+    opacity: 0.4;
+  }
+}

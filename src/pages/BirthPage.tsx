@@ -5,13 +5,13 @@ import type { BirthLocation, BirthRecord as ServerBirthRecord } from '../api/typ
 import { Glyph } from '../astro/glyphs'
 import { createBirthRecord } from '../birth/birthRecord'
 import { BirthMomentPicker, type MomentChoice } from '../components/BirthMomentPicker'
-import { BirthSequence } from '../components/BirthSequence'
+import { BirthCinematic } from '../components/BirthCinematic'
 import { ConfirmBirthCard } from '../components/ConfirmBirthCard'
 import { FurbyPortrait } from '../components/FurbyPortrait'
 import { LocationPicker } from '../components/LocationPicker'
 import { PortraitCapture } from '../components/portrait/PortraitCapture'
 import { EmbossButton } from '../components/primitives'
-import { Starfield } from '../components/Starfield'
+import { CelestialBackdrop } from '../components/CelestialBackdrop'
 import { DEFAULT_PLACE_ID, findPlace } from '../data/places'
 import { placeToLocation } from '../lib/location'
 import { formatLongDate, formatTime } from '../lib/time'
@@ -146,7 +146,7 @@ export function BirthPage() {
   }
 
   if (phase === 'sequence' && born) {
-    return <BirthSequence furby={born} onDone={() => navigate(`/furby/${born.id}/reveal`, { replace: true })} />
+    return <BirthCinematic furby={born} onDone={() => navigate(`/furby/${born.id}/reveal`, { replace: true })} />
   }
 
   if (phase === 'portrait') {
@@ -167,7 +167,7 @@ export function BirthPage() {
 
   return (
     <div className={`screen birth ${confirming ? 'birth--confirming' : ''}`}>
-      <Starfield density={confirming ? 1.3 : 0.7} burst={confirming ? 30 : 0} />
+      <CelestialBackdrop density={0.6} brightness={confirming ? 1.3 : 1} />
 
       {hasFurbys && !confirming && (
         <div className="topbar">
@@ -187,6 +187,7 @@ export function BirthPage() {
           <FurbyPortrait
             portraitId={portrait?.id}
             variant="birth"
+            layoutId="furby-portrait"
             size={250}
             decorative={false}
             asleep={!confirming}

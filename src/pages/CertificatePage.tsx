@@ -6,7 +6,7 @@ import { placeLine } from '../birth/birthRecord'
 import { BigThree } from '../components/BigThree'
 import { FurbyPortrait } from '../components/FurbyPortrait'
 import { EmbossButton, Padlock } from '../components/primitives'
-import { Starfield } from '../components/Starfield'
+import { CelestialBackdrop } from '../components/CelestialBackdrop'
 import { formatLongDate, formatTime, formatUtcOffset } from '../lib/time'
 import { formatCertificateNumber, useFurby } from '../store/furbyStore'
 import './CertificatePage.css'
@@ -22,7 +22,7 @@ export function CertificatePage() {
 
   return (
     <div className="screen screen--tight">
-      <Starfield density={0.6} />
+      <CelestialBackdrop density={0.5} />
       <div className="topbar">
         <EmbossButton to={`/furby/${furby.id}`} variant="text" className="dim">← {furby.name}</EmbossButton>
         <span className="eyebrow">Birth certificate</span>
